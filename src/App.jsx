@@ -116,7 +116,7 @@ function BoxesPage({ user, onOpen, opening, revealing, reward, onRevealComplete,
     <div className="boxes-heading"><span className="eyebrow">A GIFT, JUST FOR YOU</span><h1>The Mystery Box<span className="green-dot">.</span></h1><p className="muted">A little anticipation. A lovely surprise.</p></div>
     <section className={"boxes-hero premium-box-hero" + (busy ? " is-opening" : "") + (count ? " has-boxes" : " is-empty")}>
       <div className="gift-halo" aria-hidden="true"></div>
-      <div className="box-counter"><span className="counter-label">YOUR GIFTS</span><strong>{count.toString().padStart(2,"0")}</strong><span className="counter-caption">{count===1?"BOX WAITING FOR YOU":"BOXES WAITING FOR YOU"}</span></div>
+      <div className="box-counter"><span className="counter-label">YOUR GIFTS</span><strong>{count.toString()}</strong><span className="counter-caption">{count===1?"BOX WAITING FOR YOU":"BOXES WAITING FOR YOU"}</span></div>
       <button className="sound-toggle" type="button" onClick={onToggleSound} aria-label={soundOn?"Mute reward sound":"Enable reward sound"}><span>{soundOn?"SOUND ON":"SOUND OFF"}</span><i>{soundOn?"♪":"×"}</i></button>
       <div className="premium-box-stage">
         <BoxArtwork revealing={revealing} onRevealComplete={onRevealComplete} inactive={!count && !revealing}/>
