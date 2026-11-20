@@ -420,3 +420,130 @@ h1,h2,h3,.balance-amount,.box-counter strong{letter-spacing:-.65px}
 .reward-amount{color:#f0d18c;text-shadow:0 0 24px rgba(225,194,129,.24)}
 .reward-gift-mark{color:#f0d18c;border-color:rgba(217,182,108,.4);background:linear-gradient(145deg,rgba(217,182,108,.15),rgba(15,184,121,.12))}
 @media(max-width:390px){.custom-gift{width:190px;height:190px}.page-content{padding-inline:15px}}
+
+
+/* MOBILE UX + VISUAL SYSTEM PASS — safe scrolling, breathing room, consistent surfaces */
+html{min-height:100%;scroll-behavior:smooth;scroll-padding-bottom:calc(104px + env(safe-area-inset-bottom))}
+body{min-height:100%;overflow-x:hidden;overscroll-behavior-y:contain}
+#root{min-height:100dvh}
+.app-shell{
+  min-height:100dvh;
+  height:auto;
+  overflow:visible;
+  padding-bottom:calc(94px + env(safe-area-inset-bottom));
+  isolation:isolate;
+}
+.main-view{min-height:calc(100dvh - 70px)}
+.page-content{
+  width:100%;
+  max-width:620px;
+  margin-inline:auto;
+  padding:25px 20px 42px;
+}
+.subpage{padding-top:31px;padding-bottom:46px}
+.page-intro{margin-bottom:27px}
+.page-intro h1,.welcome-row h1{font-size:clamp(29px,8vw,36px);line-height:1.12}
+.page-intro p,.welcome-row p{font-size:13px;line-height:1.65;max-width:34ch}
+.eyebrow{font-size:9px;letter-spacing:1.45px}
+.section-title{margin:29px 0 15px}
+.section-title h2{font-size:19px;line-height:1.25}
+.balance-card{padding:21px;border-radius:22px}
+.balance-amount{font-size:clamp(36px,10vw,43px);margin:20px 0 16px}
+.quick-stats{gap:11px;margin:14px 0 24px}
+.quick-stat{min-height:82px;padding:14px 12px;border-radius:17px;gap:10px}
+.quick-stat small{font-size:8px;line-height:1.35}
+.quick-stat strong{font-size:19px}
+.checkin-card{padding:19px 16px 17px;margin-bottom:29px;border-radius:22px}
+.checkin-head{gap:11px}
+.checkin-head h3{font-size:17px}
+.checkin-days{gap:5px;margin:19px 0 17px}
+.day-reward{min-height:76px;padding:10px 1px 8px}
+.day-reward span,.day-reward small{font-size:7px}
+.day-reward strong{font-size:20px}
+.checkin-button,.primary-button{min-height:48px;border-radius:13px;font-size:12px}
+.fine-print{font-size:10px;line-height:1.55;margin-top:12px}
+.mystery-section,.earn-section{margin-bottom:27px}
+.mystery-card{min-height:228px;padding:19px;border-radius:22px}
+.mystery-copy{width:58%}
+.mystery-copy h3{font-size:24px;line-height:1.12}
+.mystery-copy p{font-size:11px;line-height:1.6}
+.dark-button{min-height:39px;border-radius:11px;padding:10px 12px}
+.mystery-count{bottom:15px;left:18px}
+.earn-row{min-height:68px;padding:13px 4px}
+.earn-row b,.referral-strip b{font-size:12px}
+.earn-row small,.referral-strip small{font-size:10px;line-height:1.45}
+.referral-strip{padding:15px;border-radius:16px;margin-top:20px;min-height:72px}
+.activity-footer{padding:23px 2px 4px;gap:10px;flex-wrap:wrap}
+.task-list{gap:14px}
+.task-card{padding:19px;border-radius:20px}
+.task-card h3{font-size:17px;line-height:1.3;margin:15px 0 7px}
+.task-card p{font-size:12px;line-height:1.65}
+.task-card-bottom{gap:12px;margin-top:17px;flex-wrap:wrap}
+.reward-chip{font-size:10px}
+.outline-button{min-height:42px;padding:10px 13px;font-size:10px;border-radius:11px}
+.empty-state{padding:32px 22px;gap:10px}
+.empty-state b{font-size:14px}
+.empty-state span{font-size:11px;line-height:1.6;max-width:34ch}
+.notice-card{padding:15px;border-radius:16px;gap:12px}
+.notice-card p{font-size:11px;line-height:1.65}
+.boxes-page{padding-top:25px}
+.boxes-heading{margin-bottom:20px}
+.premium-box-hero{border-radius:25px;padding:20px 17px 22px}
+.box-counter{margin-bottom:4px}
+.box-invitation h2{font-size:22px}
+.box-invitation p{font-size:12px;line-height:1.6}
+.premium-open-button{min-height:51px;border-radius:15px;font-size:13px}
+.box-footnote{display:block;padding:12px 4px 0;font-size:10px;line-height:1.5}
+.invite-hero{padding:26px 20px;border-radius:24px}
+.invite-hero h2{font-size:29px}
+.invite-hero>p{font-size:12px;line-height:1.65}
+.invite-steps{gap:10px;margin-top:21px}
+.invite-steps span{font-size:10px;padding:10px}
+.referral-link-card,.wallet-panel{padding:19px;border-radius:20px;margin-top:15px}
+.link-value{min-height:46px;gap:9px}
+.link-value span{font-size:10px}
+.task-summary{margin:17px 0 26px}
+.profile-card{min-height:72px;padding:17px;border-radius:19px}
+.profile-card b{font-size:13px}
+.profile-card span{font-size:9px}
+.wallet-panel{margin-bottom:28px}
+.wallet-panel>b{font-size:31px}
+.wallet-panel>p{font-size:10px;line-height:1.5}
+.settings-list{border-radius:18px}
+.settings-list button{min-height:59px;padding:15px 16px;font-size:12px}
+.bottom-nav{
+  height:calc(76px + env(safe-area-inset-bottom));
+  padding:7px 8px calc(7px + env(safe-area-inset-bottom));
+  padding-bottom:max(7px,env(safe-area-inset-bottom));
+  z-index:30;
+  box-shadow:0 -12px 32px rgba(0,0,0,.28);
+}
+.bottom-nav button{min-height:52px;gap:5px;font-size:10px}
+.bottom-nav button svg{width:20px;height:20px}
+.bottom-nav button.active{position:relative}
+.bottom-nav button.active:before{top:-7px;width:23px;height:2px;border-radius:9px}
+.toast-message{bottom:calc(86px + env(safe-area-inset-bottom));z-index:45}
+.modal-backdrop,.reward-backdrop{padding:18px 16px calc(24px + env(safe-area-inset-bottom));overflow-y:auto}
+.withdraw-modal,.reward-popup{max-height:calc(100dvh - 42px - env(safe-area-inset-bottom));overflow-y:auto}
+button:focus-visible,[role=button]:focus-visible{outline:2px solid var(--brand-cyan,#68dce4);outline-offset:3px}
+@media(min-width:520px){
+  .app-shell{padding-bottom:calc(94px + env(safe-area-inset-bottom))}
+  .page-content{padding-inline:24px}
+}
+@media(max-width:390px){
+  .page-content{padding-inline:16px;padding-top:23px}
+  .subpage{padding-top:27px}
+  .quick-stat{padding:12px 9px;gap:7px}
+  .quick-stat strong{font-size:17px}
+  .stat-icon{width:30px;height:30px}
+  .checkin-card{padding:16px 12px}
+  .day-reward{min-height:70px}
+  .mystery-card{padding:16px;min-height:218px}
+  .mystery-copy{width:59%}
+  .mystery-copy h3{font-size:22px}
+  .bottom-nav button{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .main-view{animation:none}
+}
