@@ -22,9 +22,9 @@ function Brand() {
 function BoxArtwork({ revealing = false, onRevealComplete, inactive = false }) {
   return <div className={"box-stage original-box-artwork" + (revealing ? " revealing" : "") + (inactive ? " inactive" : "")} role="img" aria-label={revealing ? "BOX EARN mystery gift opening" : "Original BOX EARN emerald mystery gift"}>
     <span className="box-art-glow" aria-hidden="true" />
-    <img className="box-image box-image-closed" src="/assets/boxearn/close.webp" alt="" draggable="false" />
-    <img className="box-image box-image-slight" src="/assets/boxearn/slightly-open.webp" alt="" draggable="false" />
-    <img className="box-image box-image-open" src="/assets/boxearn/open.webp" alt="" draggable="false" onAnimationEnd={revealing ? onRevealComplete : undefined} />
+    <span className="box-image box-image-closed" aria-hidden="true" />
+    <span className="box-image box-image-slight" aria-hidden="true" />
+    <span className="box-image box-image-open" aria-hidden="true" onAnimationEnd={revealing ? onRevealComplete : undefined} />
   </div>;
 }
 function SectionTitle({ eyebrow, title, action, onAction }) {
