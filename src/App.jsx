@@ -109,8 +109,8 @@ function TasksPage({ tasks, hiddenTaskIds = [], onSubmit, submitting, onWatchAd,
     <div className="notice-card"><ShieldCheck size={18}/><p>Complete a task, then tap its active button to submit it for review. Approved tasks receive their displayed box reward.</p></div>
   </div>;
 }
-function BoxesPage({ user, onOpen, opening, revealing, reward, onRevealComplete, rewardModalOpen, onDismissReward, soundOn, onToggleSound }) {
-  const count = user?.boxes ?? 0;
+function BoxesPage({ user, boxCountOverride, onOpen, opening, revealing, reward, onRevealComplete, rewardModalOpen, onClaimReward, claimSuccessOpen, onDismissReward, soundOn, onToggleSound }) {
+  const count = boxCountOverride ?? (user?.boxes ?? 0);
   const busy = opening || revealing;
   return <div className="page-content subpage boxes-page">
     <div className="boxes-heading"><span className="eyebrow">A GIFT, JUST FOR YOU</span><h1>The Mystery Box<span className="green-dot">.</span></h1><p className="muted">A little anticipation. A lovely surprise.</p></div>
@@ -134,6 +134,7 @@ function BoxesPage({ user, onOpen, opening, revealing, reward, onRevealComplete,
         <button className="primary-button" onClick={onClaimReward}>Claim my gift <Sparkles size={15}/></button>
       </div>
     </div>}
+    {claimSuccessOpen && <div className="reward-backdrop" role="dialog" aria-modal="true" aria-label="Gift successfully claimed"><div className="reward-popup"><div className="reward-popup-glow"></div><span className="reward-kicker"><CheckCircle2 size={13}/> GIFT SUCCESSFULLY CLAIMED</span><div className="reward-gift-mark"><Gift size={30}/></div><h2>Congratulations!</h2><p>You successfully claimed your mystery gift</p><strong className="reward-amount">+{reward} <small>USDT</small></strong><span className="reward-added"><CheckCircle2 size={14}/> Your reward is in your balance</span><button className="primary-button" onClick={onDismissReward}>OK</button></div></div>}
   </div>;
 }
 
