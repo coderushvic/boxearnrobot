@@ -37,25 +37,29 @@
 @media(max-width:360px){.day-reward span{font-size:6px}.day-reward strong{font-size:17px}.day-reward small{font-size:6px}.checkin-days{gap:3px}}
 
 
-/* Original BOX EARN Library artwork and premium 4-second reveal */
+/* Original BOX EARN artwork — premium, compositor-friendly reveal */
 .brand{gap:0;min-width:0}
 .brand img{display:block;width:132px;height:49px;object-fit:contain;object-position:left center}
 .original-box-artwork{isolation:isolate;overflow:visible}
-.original-box-artwork .box-art-glow{position:absolute;inset:14% 12%;border-radius:50%;background:radial-gradient(ellipse,#21d98b38 0%,#13a86b17 42%,transparent 72%);filter:blur(18px);z-index:-1}
-.original-box-artwork .box-image{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;mix-blend-mode:screen;filter:drop-shadow(0 12px 18px #0008)}
+.original-box-artwork .box-art-glow{position:absolute;inset:14% 12%;border-radius:50%;background:radial-gradient(ellipse,#21d98b38 0%,#13a86b17 42%,transparent 72%);filter:blur(18px);z-index:-1;opacity:.9}
+.original-box-artwork .box-image{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;mix-blend-mode:screen;filter:drop-shadow(0 12px 18px #0008);backface-visibility:hidden;user-select:none;-webkit-user-drag:none}
 .original-box-artwork .box-image-closed{opacity:1}
 .original-box-artwork .box-image-slight,.original-box-artwork .box-image-open{opacity:0}
-.original-box-artwork.revealing .box-image-closed{animation:box-closed-sequence 4s ease-in-out both}
-.original-box-artwork.revealing .box-image-slight{animation:box-slight-sequence 4s ease-in-out both}
-.original-box-artwork.revealing .box-image-open{animation:box-open-sequence 4s ease-in-out both}
-@keyframes box-closed-sequence{0%,21%{opacity:1;transform:scale(1)}27%,100%{opacity:0;transform:scale(.97)}}
-@keyframes box-slight-sequence{0%,23%{opacity:0;transform:translateY(7px) scale(.98)}30%,48%{opacity:1;transform:translateY(0) scale(1)}55%,100%{opacity:0;transform:scale(1.015)}}
-@keyframes box-open-sequence{0%,51%{opacity:0;transform:scale(.98)}59%,100%{opacity:1;transform:scale(1.035)}}
+.original-box-artwork.revealing .box-image{will-change:opacity,transform,filter}
+.original-box-artwork.revealing .box-image-closed{animation:box-closed-sequence 4.2s cubic-bezier(.22,.7,.18,1) both}
+.original-box-artwork.revealing .box-image-slight{animation:box-slight-sequence 4.2s cubic-bezier(.22,.7,.18,1) both}
+.original-box-artwork.revealing .box-image-open{animation:box-open-sequence 4.2s cubic-bezier(.16,.72,.22,1) both}
+.original-box-artwork.revealing .box-art-glow{animation:box-glow-sequence 4.2s ease-out both}
+.original-box-artwork.revealing:after{content:"";position:absolute;inset:12%;pointer-events:none;border-radius:50%;background:radial-gradient(circle at 50% 55%,#ffe8a84d 0,transparent 48%);opacity:0;mix-blend-mode:screen;animation:box-reveal-flash 4.2s ease-out both}
+@keyframes box-closed-sequence{0%,20%{opacity:1;transform:translateY(0) scale(1)}27%,100%{opacity:0;transform:translateY(-3px) scale(.975)}}
+@keyframes box-slight-sequence{0%,23%{opacity:0;transform:translateY(8px) scale(.975)}30%,49%{opacity:1;transform:translateY(0) scale(1)}56%,100%{opacity:0;transform:translateY(-2px) scale(1.012)}}
+@keyframes box-open-sequence{0%,51%{opacity:0;transform:scale(.975);filter:brightness(1)}61%{opacity:1;transform:scale(1.015);filter:brightness(1.13)}76%,100%{opacity:1;transform:scale(1.035);filter:brightness(1.04)}}
+@keyframes box-glow-sequence{0%,48%{opacity:.65;transform:scale(.9)}68%{opacity:1;transform:scale(1.12)}100%{opacity:.95;transform:scale(1.06)}}
+@keyframes box-reveal-flash{0%,52%{opacity:0}65%{opacity:.95}78%,100%{opacity:.16}}
 .boxes-hero .original-box-artwork{height:205px}
 .mystery-card .original-box-artwork{right:-3px;top:14px;height:166px}
 @media(prefers-reduced-motion:reduce){
- .original-box-artwork.revealing .box-image{animation:none}
- .original-box-artwork.revealing .box-image-closed{opacity:0}
- .original-box-artwork.revealing .box-image-slight{opacity:0}
- .original-box-artwork.revealing .box-image-open{opacity:1}
+ .original-box-artwork.revealing .box-image,
+ .original-box-artwork.revealing .box-art-glow,
+ .original-box-artwork.revealing:after{animation-duration:1ms;animation-iteration-count:1}
 }
