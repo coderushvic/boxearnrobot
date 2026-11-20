@@ -30,8 +30,8 @@ function SectionTitle({ eyebrow, title, action, onAction }) {
   return <div className="section-title"><div><span className="eyebrow">{eyebrow}</span><h2>{title}</h2></div>{action && <button className="text-action" onClick={onAction}>{action}<ArrowRight size={15}/></button>}</div>;
 }
 
-function HomePage({ user, stats, checkedIn, onNavigate, onCheckIn, checkingIn, onWithdraw }) {
-  const nextDay = (user?.checkinCycle ?? 0) + 1;
+function HomePage({ user, stats, checkedIn, checkinDay, onNavigate, onCheckIn, checkingIn, onWithdraw }) {
+  const nextDay = checkinDay;
   return <div className="page-content home-page">
     <div className="welcome-row"><div><div className="eyebrow">YOUR BOX EARN DASHBOARD</div><h1>Good morning<span className="green-dot">.</span></h1><p className="muted">Your next reward is closer than you think.</p></div><button className="icon-button" aria-label="Notifications"><Bell size={19}/><i /></button></div>
     <section className="balance-card"><div className="balance-card-top"><span className="balance-caption"><Wallet size={14}/> TOTAL BALANCE</span><span className="secure-label"><ShieldCheck size={13}/> SECURE WALLET</span></div><div className="balance-amount">{Number(user?.balanceUsdt || 0).toFixed(2)} <span>USDT</span></div><div className="balance-bottom"><span className="muted small">Your available earnings</span><button className="withdraw-button" onClick={onWithdraw}><ArrowDownToLine size={15}/> Withdraw</button></div><div className="balance-orb" /></section>
@@ -134,8 +134,13 @@ export default function App() {
     return ()=>{live=false;};
   },[]);
 
-  const today=new Intl.DateTimeFormat("en-CA",{timeZone:"Africa/Lagos",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+  const dateParts=Object.fromEntries(new Intl.DateTimeFormat("en-GB",{timeZone:"Africa/Lagos",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date()).map(p=>[p.type,p.value]));
+  const today=dateParts.year+"-"+dateParts.month+"-"+dateParts.day;
+  const yesterdayDate=new Date(today+"T12:00:00Z"); yesterdayDate.setUTCDate(yesterdayDate.getUTCDate()-1);
+  const yesterday=yesterdayDate.toISOString().slice(0,10);
   const checkedIn=user?.lastCheckinDate===today;
+  const checkinCycleNext=user?.lastCheckinDate===yesterday?((user.checkinCycle+1)%3):0;
+  const checkinDay=checkedIn?(user?.checkinCycle??0)+1:checkinCycleNext+1;
   async function perform(action,success) {
     setNotice("");
     try { const result=await action(); await refreshData(); if(success)setNotice(success); return result; }
@@ -185,7 +190,7 @@ export default function App() {
   return <div className="app-shell">
     <header className="topbar"><Brand/><button className="top-avatar" onClick={()=>setActive("profile")} aria-label="Open profile"><UserRound size={17}/></button></header>
     <main key={active} className="main-view">
-      {active==="home"&&<HomePage user={user} stats={stats} onNavigate={setActive} checkedIn={checkedIn} onCheckIn={checkIn} checkingIn={checkingIn} onWithdraw={()=>setWithdrawOpen(true)}/>}
+      {active==="home"&&<HomePage user={user} stats={stats} onNavigate={setActive} checkedIn={checkedIn} checkinDay={checkinDay} onCheckIn={checkIn} checkingIn={checkingIn} onWithdraw={()=>setWithdrawOpen(true)}/>}
       {active==="tasks"&&<TasksPage tasks={tasks} onSubmit={submitTask} submitting={submitting} onWatchAd={watchAd} watchingAd={watchingAd} adStats={adStats}/>}
       {active==="boxes"&&<BoxesPage user={user} onOpen={openBox} opening={opening} reward={lastReward}/>}
       {active==="invite"&&<InvitePage user={user} stats={stats} referrals={referrals}/>}
