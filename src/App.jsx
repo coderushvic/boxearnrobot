@@ -56,7 +56,7 @@ function HomePage({ user, stats, checkedIn, checkinDay, onNavigate, onCheckIn, c
     </section>
     <section className="earn-section"><SectionTitle eyebrow="KEEP YOUR MOMENTUM" title="Ways to earn" action="All tasks" onAction={() => onNavigate("tasks")}/>
       <div className="earn-row" onClick={() => onNavigate("tasks")} role="button" tabIndex={0}><span className="earn-icon"><Target size={19}/></span><div><b>Complete tasks</b><small>Approved activities earn boxes.</small></div><ArrowRight size={17}/></div>
-      <div className="earn-row" onClick={() => onNavigate("tasks")} role="button" tabIndex={0}><span className="earn-icon cyan-bg"><PlayCircle size={19}/></span><div><b>Watch rewarded ads</b><small>Verified Monetag rewards are being connected.</small></div><ArrowRight size={17}/></div>
+      <div className="earn-row" onClick={() => onNavigate("tasks")} role="button" tabIndex={0}><span className="earn-icon cyan-bg"><PlayCircle size={19}/></span><div><b>Watch rewarded ads</b><small>Earn a mystery box with every completed ad.</small></div><ArrowRight size={17}/></div>
     </section>
     <div className="referral-strip" onClick={() => onNavigate("invite")} role="button" tabIndex={0}><span className="referral-glyph"><Users size={20}/></span><div><b>Good things are better shared</b><small>Invite a friend and earn a mystery box.</small></div><ArrowRight size={17}/></div>
     <div className="activity-footer"><span><History size={14}/> Recent activity</span><span className="muted">Your rewards are stored securely.</span></div>
