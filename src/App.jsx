@@ -20,11 +20,16 @@ function Brand() {
   return <div className="brand" aria-label="BOX EARN"><img src="/assets/boxearn/boxearn-logo.webp" alt="BOX EARN" /></div>;
 }
 function BoxArtwork({ revealing = false, onRevealComplete, inactive = false }) {
-  return <div className={"box-stage original-box-artwork" + (revealing ? " revealing" : "") + (inactive ? " inactive" : "")} role="img" aria-label={revealing ? "BOX EARN mystery gift opening" : "Original BOX EARN emerald mystery gift"}>
+  return <div className={"box-stage original-box-artwork custom-gift-art" + (revealing ? " revealing" : "") + (inactive ? " inactive" : "")} role="img" aria-label={revealing ? "BOX EARN mystery gift opening" : "Original BOX EARN emerald and gold mystery gift"} onAnimationEnd={revealing ? onRevealComplete : undefined}>
     <span className="box-art-glow" aria-hidden="true" />
-    <span className="box-image box-image-closed" aria-hidden="true" />
-    <span className="box-image box-image-slight" aria-hidden="true" />
-    <span className="box-image box-image-open" aria-hidden="true" onAnimationEnd={revealing ? onRevealComplete : undefined} />
+    <span className="custom-gift-shadow" aria-hidden="true" />
+    <div className="custom-gift" aria-hidden="true">
+      <span className="custom-gift-side" />
+      <span className="custom-gift-body"><i className="custom-gift-ribbon" /><i className="custom-gift-emblem"><Gift size={23}/></i></span>
+      <span className="custom-gift-lid"><i className="custom-lid-ribbon" /></span>
+      <span className="custom-bow"><i /><i /><b /></span>
+      <span className="custom-gift-spark custom-spark-a">✦</span><span className="custom-gift-spark custom-spark-b">✧</span>
+    </div>
   </div>;
 }
 function SectionTitle({ eyebrow, title, action, onAction }) {
