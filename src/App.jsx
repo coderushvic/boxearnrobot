@@ -77,16 +77,17 @@ function HomePage({ user, stats, activity = [], checkedIn, checkinDay, onNavigat
 function TasksPage({ tasks, hiddenTaskIds = [], onSubmit, submitting, onWatchAd, watchingAd, adCooldown }) {
   const visibleTasks = tasks.filter(task => !hiddenTaskIds.includes(task.id));
   const communityItems = [
-    { label: "Follow us on Facebook", detail: "Get updates, announcements and community news.", Icon: Facebook, platform:"facebook", href:import.meta.env.VITE_FACEBOOK_URL },
-    { label: "Join our Telegram", detail: "Stay close to BOX EARN announcements and updates.", Icon: Send, platform:"telegram", href:import.meta.env.VITE_TELEGRAM_CHANNEL_URL },
-    { label: "Subscribe on YouTube", detail: "Watch product updates and helpful walkthroughs.", Icon: Youtube, platform:"youtube", href:import.meta.env.VITE_YOUTUBE_URL },
-    { label: "Follow us on Instagram", detail: "See BOX EARN news and community highlights.", Icon: Instagram, platform:"instagram", href:import.meta.env.VITE_INSTAGRAM_URL }
+    { label: "Follow us on Facebook", detail: "Follow the BOX EARN Facebook community for updates.", Icon: Facebook, platform:"facebook" },
+    { label: "Join our Telegram", detail: "Join the official BOX EARN Telegram community.", Icon: Send, platform:"telegram" },
+    { label: "Subscribe on YouTube", detail: "Subscribe to the BOX EARN YouTube channel.", Icon: Youtube, platform:"youtube" },
+    { label: "Follow us on Instagram", detail: "Follow BOX EARN on Instagram for updates.", Icon: Instagram, platform:"instagram" }
   ].map(item => ({
     ...item,
     task: visibleTasks.find(task => String(task.id).toLowerCase().includes(item.platform) || String(task.task_type).toLowerCase() === item.platform)
   }));
-  const generalTasks = visibleTasks.filter(task => !communityItems.some(item => item.task?.id === task.id));
-  const completionButton = task => <button className="action-task-button" disabled={submitting===task.id} onClick={()=>onSubmit(task.id)}>{submitting===task.id?"Sending…":"I've completed it"}</button>;
+  const communityTaskIds = communityItems.map(item => item.task?.id).filter(Boolean);
+  const generalTasks = visibleTasks.filter(task => !communityTaskIds.includes(task.id));
+  const completionButton = task => <button type="button" className="action-task-button" disabled={submitting===task.id} onClick={()=>onSubmit(task.id)}>{submitting===task.id?"Sending…":"I've completed it"}</button>;
   return <div className="page-content subpage tasks-page">
     <div className="page-intro"><span className="eyebrow">YOUR EARNING HUB</span><h1>Tasks<span className="green-dot">.</span></h1><p className="muted">Small actions. More chances to earn.</p></div>
     <SectionTitle eyebrow="QUICK WAYS TO EARN" title="More ways to earn"/>
@@ -96,16 +97,16 @@ function TasksPage({ tasks, hiddenTaskIds = [], onSubmit, submitting, onWatchAd,
         <div className="action-task-copy"><div className="action-task-title"><b>Watch ads</b></div><p>Watch a short ad and earn a mystery box.</p>{adCooldown>0 && <small className="ad-cooldown-label">Next ad available in {Math.floor(adCooldown/60)}:{String(adCooldown%60).padStart(2,"0")}</small>}<span className="task-box-reward"><Gift size={14}/> 1 box per ad</span></div>
         <button className="action-task-button" disabled={!hasMonetagZone || watchingAd || adCooldown>0} onClick={onWatchAd}>{watchingAd?"…":adCooldown>0?"Wait":"Watch"}</button>
       </article>
-      {communityItems.map(({label,detail,Icon,platform,href,task})=>task&&<article className={"action-task community-action community-"+platform} key={task.id}>
+      {communityItems.map(({label,detail,Icon,platform,task})=>task&&<article className={"action-task community-action community-"+platform} key={task.id}>
         <span className={"action-task-icon community-icon "+platform+"-icon"}><Icon size={19}/></span>
-        <div className="action-task-copy"><div className="action-task-title"><b>{label}</b></div><p>{detail}</p><span className="task-box-reward"><Gift size={14}/> {task.reward_boxes} {Number(task.reward_boxes)===1?"box":"boxes"}</span></div>
-        <div className="task-action-controls"><a className="action-task-button community-action-button" href={href||task.url||undefined} target={href||task.url?"_blank":undefined} rel={href||task.url?"noopener noreferrer":undefined} aria-disabled={!href&&!task.url} onClick={e=>{if(!href&&!task.url)e.preventDefault();}}>Open</a>{completionButton(task)}</div>
+        <div className="action-task-copy"><div className="action-task-title"><b>{label}</b></div><p>{detail}</p><span className="task-box-reward"><Gift size={14}/> {Number(task.reward_boxes)||1} {Number(task.reward_boxes)===1?"box":"boxes"}</span></div>
+        {completionButton(task)}
       </article>)}
       {generalTasks.map(task=><article className="action-task" key={task.id}>
         <span className="action-task-icon"><Target size={19}/></span><div className="action-task-copy"><div className="action-task-title"><b>{task.title}</b></div><p>{task.description}</p><span className="task-box-reward"><Gift size={14}/> {task.reward_boxes} {Number(task.reward_boxes)===1?"box":"boxes"}</span></div>{completionButton(task)}
       </article>)}
     </div>
-    <div className="notice-card"><ShieldCheck size={18}/><p>Open and complete an activity, then submit it for review. Approved tasks receive their displayed box reward.</p></div>
+    <div className="notice-card"><ShieldCheck size={18}/><p>Complete a task, then tap its active button to submit it for review. Approved tasks receive their displayed box reward.</p></div>
   </div>;
 }
 function BoxesPage({ user, onOpen, opening, revealing, reward, onRevealComplete, rewardModalOpen, onDismissReward, soundOn, onToggleSound }) {
