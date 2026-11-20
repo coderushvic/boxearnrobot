@@ -75,7 +75,6 @@ function HomePage({ user, stats, activity = [], checkedIn, checkinDay, onNavigat
 }
 
 function TasksPage({ tasks, onSubmit, submitting, onWatchAd, watchingAd, adCooldown }) {
-  const [openedTasks,setOpenedTasks]=useState({});
   const communityItems = [
     { label: "Follow us on Facebook", detail: "Get updates, announcements and community news.", Icon: Facebook, platform:"facebook", href:import.meta.env.VITE_FACEBOOK_URL },
     { label: "Join our Telegram", detail: "Stay close to BOX EARN announcements and updates.", Icon: Send, platform:"telegram", href:import.meta.env.VITE_TELEGRAM_CHANNEL_URL },
@@ -86,7 +85,7 @@ function TasksPage({ tasks, onSubmit, submitting, onWatchAd, watchingAd, adCoold
     task: tasks.find(task => String(task.id).toLowerCase().includes(item.platform) || String(task.task_type).toLowerCase() === item.platform)
   }));
   const generalTasks = tasks.filter(task => !communityItems.some(item => item.task?.id === task.id));
-  const completionButton = task => <button className="action-task-button" disabled={!openedTasks[task.id] || submitting===task.id} onClick={()=>onSubmit(task.id)}>{submitting===task.id?"Sending…":openedTasks[task.id]?"I've completed it":"Complete task first"}</button>;
+  const completionButton = task => <button className="action-task-button" disabled={submitting===task.id} onClick={()=>onSubmit(task.id)}>{submitting===task.id?"Sending…":"I've completed it"}</button>;
   return <div className="page-content subpage tasks-page">
     <div className="page-intro"><span className="eyebrow">YOUR EARNING HUB</span><h1>Tasks<span className="green-dot">.</span></h1><p className="muted">Small actions. More chances to earn.</p></div>
     <SectionTitle eyebrow="QUICK WAYS TO EARN" title="More ways to earn"/>
@@ -99,7 +98,7 @@ function TasksPage({ tasks, onSubmit, submitting, onWatchAd, watchingAd, adCoold
       {communityItems.map(({label,detail,Icon,platform,href,task})=>task&&<article className={"action-task community-action community-"+platform} key={task.id}>
         <span className={"action-task-icon community-icon "+platform+"-icon"}><Icon size={19}/></span>
         <div className="action-task-copy"><div className="action-task-title"><b>{label}</b></div><p>{detail}</p><span className="task-box-reward"><Gift size={14}/> {task.reward_boxes} {Number(task.reward_boxes)===1?"box":"boxes"}</span></div>
-        <div className="task-action-controls"><a className="action-task-button community-action-button" href={href||undefined} target={href?"_blank":undefined} rel={href?"noopener noreferrer":undefined} aria-disabled={!href} onClick={e=>{if(!href)e.preventDefault();else setOpenedTasks(v=>({...v,[task.id]:true}));}}>Open</a>{completionButton(task)}</div>
+        <div className="task-action-controls"><a className="action-task-button community-action-button" href={href||task.url||undefined} target={href||task.url?"_blank":undefined} rel={href||task.url?"noopener noreferrer":undefined} aria-disabled={!href&&!task.url} onClick={e=>{if(!href&&!task.url)e.preventDefault();}}>Open</a>{completionButton(task)}</div>
       </article>)}
       {generalTasks.map(task=><article className="action-task" key={task.id}>
         <span className="action-task-icon"><Target size={19}/></span><div className="action-task-copy"><div className="action-task-title"><b>{task.title}</b></div><p>{task.description}</p><span className="task-box-reward"><Gift size={14}/> {task.reward_boxes} {Number(task.reward_boxes)===1?"box":"boxes"}</span></div>{completionButton(task)}
