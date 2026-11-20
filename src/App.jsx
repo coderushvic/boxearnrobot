@@ -131,7 +131,7 @@ function BoxesPage({ user, onOpen, opening, revealing, reward, onRevealComplete,
         <div className="reward-gift-mark"><Gift size={30}/></div><h2>You found a reward!</h2><p>Your mystery gift contained</p>
         <strong className="reward-amount">+{reward} <small>USDT</small></strong>
         <span className="reward-added"><CheckCircle2 size={14}/> Added to your balance</span>
-        <button className="primary-button" onClick={onDismissReward}>That made my day <Sparkles size={15}/></button>
+        <button className="primary-button" onClick={onClaimReward}>Claim my gift <Sparkles size={15}/></button>
       </div>
     </div>}
   </div>;
@@ -180,7 +180,7 @@ export default function App() {
   const [lastReward,setLastReward]=useState("");
   const [revealing,setRevealing]=useState(false);
   const [pendingReward,setPendingReward]=useState("");
-  const [rewardModalOpen,setRewardModalOpen]=useState(false);
+  const [rewardModalOpen,setRewardModalOpen]=useState(false);\n  const [claimSuccessOpen,setClaimSuccessOpen]=useState(false);\n  const [boxCountOverride,setBoxCountOverride]=useState(null);
   const [soundOn,setSoundOn]=useState(true);
   const rewardAudio=useRef(null);
   const [withdrawOpen,setWithdrawOpen]=useState(false);
@@ -256,7 +256,7 @@ export default function App() {
     playRewardChime();
   }
   useEffect(() => {
-    if (!rewardModalOpen) return undefined;
+    if (!claimSuccessOpen) return undefined;
     const colors = ["#12b875", "#e6bd68", "#f4e7c5", "#68dce4", "#a88be8", "#ffffff"];
     const timers = [];
     const burst = (origin,count,spread,velocity) => confetti({particleCount:count,spread,startVelocity:velocity,gravity:.82,ticks:260,decay:.91,scalar:1.08,origin,colors,shapes:["square","circle"],zIndex:10000});
@@ -269,7 +269,7 @@ export default function App() {
     const sideCannons=()=>{burst({x:0,y:.68},4,48,34);burst({x:1,y:.68},4,48,34);if(Date.now()<end)frameId=requestAnimationFrame(sideCannons);};
     frameId=requestAnimationFrame(sideCannons);
     return ()=>{timers.forEach(window.clearTimeout);cancelAnimationFrame(frameId);confetti.reset();};
-  }, [rewardModalOpen]);
+  }, [claimSuccessOpen]);
   useEffect(() => {
     if (!revealing || !pendingReward) return undefined;
     // Fallback for devices that fail to dispatch animationend (e.g. a tab resumes late).
@@ -278,7 +278,7 @@ export default function App() {
   }, [revealing, pendingReward]);
   async function openBox() {
     if(opening||revealing||!(user?.boxes>0))return;
-    setOpening(true);setLastReward("");setPendingReward("");setRewardModalOpen(false);
+    setOpening(true);setBoxCountOverride(user?.boxes ?? 0);setLastReward("");setPendingReward("");setRewardModalOpen(false);setClaimSuccessOpen(false);
     try { const AudioCtx=window.AudioContext||window.webkitAudioContext; if(AudioCtx){ if(!rewardAudio.current) rewardAudio.current=new AudioCtx(); if(rewardAudio.current.state==="suspended") rewardAudio.current.resume(); } } catch {}
     try {
       // The API commits the box deduction, reward and ledger entry before any reveal begins.
@@ -345,7 +345,7 @@ export default function App() {
     <main key={active} className="main-view">
       {active==="home"&&<HomePage user={user} stats={stats} activity={activity} onNavigate={setActive} checkedIn={checkedIn} checkinDay={checkinDay} onCheckIn={checkIn} checkingIn={checkingIn} onWithdraw={()=>setWithdrawOpen(true)}/>}
       {active==="tasks"&&<TasksPage tasks={tasks} hiddenTaskIds={hiddenTaskIds} onSubmit={submitTask} submitting={submitting} onWatchAd={watchAd} watchingAd={watchingAd} adCooldown={adCooldown}/>}
-      {active==="boxes"&&<BoxesPage user={user} onOpen={openBox} opening={opening} revealing={revealing} reward={lastReward} onRevealComplete={finishReveal} rewardModalOpen={rewardModalOpen} onDismissReward={()=>setRewardModalOpen(false)} soundOn={soundOn} onToggleSound={()=>setSoundOn(v=>!v)}/>}
+      {active==="boxes"&&<BoxesPage user={user} boxCountOverride={boxCountOverride} onOpen={openBox} opening={opening} revealing={revealing} reward={lastReward} onRevealComplete={finishReveal} rewardModalOpen={rewardModalOpen} onClaimReward={()=>{setRewardModalOpen(false);setBoxCountOverride(null);setClaimSuccessOpen(true);}} claimSuccessOpen={claimSuccessOpen} onDismissReward={()=>setClaimSuccessOpen(false)} soundOn={soundOn} onToggleSound={()=>setSoundOn(v=>!v)}/>}
       {active==="invite"&&<InvitePage user={user} stats={stats} referrals={referrals}/>}
       {active==="profile"&&<ProfilePage user={user} onWithdraw={()=>setWithdrawOpen(true)}/>}
     </main>
