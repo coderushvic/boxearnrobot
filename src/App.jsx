@@ -3,7 +3,7 @@ import {
   ArrowDownToLine, ArrowRight, ArrowUpRight, Bell, CalendarCheck2, Check,
   CheckCircle2, ChevronRight, CircleHelp, Copy, Gift, History, Home,
   Link2, LockKeyhole, LogOut, PlayCircle, Settings, ShieldCheck, Sparkles,
-  Target, Ticket, UserRound, Users, Wallet, X
+  Target, Ticket, UserRound, Users, Wallet, X, Facebook, Send, Youtube, Instagram
 } from "lucide-react";
 import { apiRequest, authenticate } from "./api.js";
 import confetti from "canvas-confetti";
@@ -64,14 +64,31 @@ function HomePage({ user, stats, checkedIn, checkinDay, onNavigate, onCheckIn, c
 }
 
 function TasksPage({ tasks, onSubmit, submitting, onWatchAd, watchingAd, adStats }) {
-  return <div className="page-content subpage"><div className="page-intro"><span className="eyebrow">YOUR EARNING HUB</span><h1>Tasks<span className="green-dot">.</span></h1><p className="muted">Complete verified activities and collect more mystery boxes.</p></div>
+  const adProgress = Math.min(100, ((adStats?.progressToNextReward ?? 0) / 200) * 100);
+  const communityItems = [
+    { label: "Follow us on Facebook", detail: "Get updates, announcements and community news.", Icon: Facebook },
+    { label: "Join our Telegram", detail: "Stay close to BOX EARN announcements and updates.", Icon: Send },
+    { label: "Subscribe on YouTube", detail: "Watch product updates and helpful walkthroughs.", Icon: Youtube },
+    { label: "Follow us on Instagram", detail: "See BOX EARN news and community highlights.", Icon: Instagram }
+  ];
+  return <div className="page-content subpage tasks-page">
+    <div className="page-intro"><span className="eyebrow">YOUR EARNING HUB</span><h1>Tasks<span className="green-dot">.</span></h1><p className="muted">Small actions. More chances to earn.</p></div>
     <SectionTitle eyebrow="EARN BOXES" title="Available tasks"/>
     {tasks.length ? <div className="task-list">{tasks.map(t=><article className="task-card" key={t.id}><div className="task-card-top"><span className="task-icon"><Target size={19}/></span><span className="task-tag">VERIFIED TASK</span></div><h3>{t.title}</h3><p>{t.description}</p><div className="task-card-bottom"><span className="reward-chip"><Gift size={13}/>{t.reward_boxes} boxes</span><button className="outline-button" disabled={submitting===t.id} onClick={()=>onSubmit(t.id)}>{submitting===t.id?"Submitting…":"Submit task"}</button></div></article>)}</div> : <div className="empty-state"><Target size={22}/><b>New tasks are being prepared</b><span>Verified tasks will appear here when their rules and reward settings are configured.</span></div>}
-    <div className="notice-card"><ShieldCheck size={18}/><p>Task rewards are credited only after server-side approval. Repeated submissions cannot generate extra boxes.</p></div>
-    <article className="task-card"><div className="task-card-top"><span className="task-icon"><PlayCircle size={19}/></span><span className="task-tag">MONETAG</span></div><h3>Rewarded advertisements</h3><p>Target: 200 verified ad views for 50 boxes. Ad rewards remain disabled until the official Monetag postback is configured and verified.</p><div className="task-card-bottom"><span className="reward-chip"><Gift size={13}/>{adStats?.progressToNextReward ?? 0} / 200 verified ads</span><button className="outline-button" disabled={!hasMonetagZone || watchingAd} onClick={onWatchAd}>{!hasMonetagZone ? "Zone ID needed" : watchingAd ? "Loading ad…" : "Watch ad"}</button></div><p className="fine-print">50 boxes are credited after every 200 unique, paid impressions confirmed by Monetag.</p></article>
+    <SectionTitle eyebrow="QUICK WAYS TO EARN" title="More ways to earn"/>
+    <div className="action-task-list">
+      <article className="action-task ad-action-task">
+        <span className="action-task-icon"><PlayCircle size={19}/></span>
+        <div className="action-task-copy"><div className="action-task-title"><b>Watch ads</b><span className="action-tag reward-tag">200 ADS · 50 BOXES</span></div><p>Watch rewarded ads and build progress towards your next box bonus.</p><div className="ad-progress-track"><i style={{width:adProgress+"%"}}/></div><small className="ad-progress-label">{adStats?.progressToNextReward ?? 0} of 200 verified ads completed</small></div>
+        <button className="action-task-button" disabled={!hasMonetagZone || watchingAd} onClick={onWatchAd}>{!hasMonetagZone?"Soon":watchingAd?"…":"Watch"}</button>
+      </article>
+      {communityItems.map(({label,detail,Icon})=><article className="action-task community-action" key={label}>
+        <span className="action-task-icon community-icon"><Icon size={18}/></span><div className="action-task-copy"><div className="action-task-title"><b>{label}</b><span className="action-tag coming-tag">COMING SOON</span></div><p>{detail}</p></div><span className="action-lock"><LockKeyhole size={14}/></span>
+      </article>)}
+    </div>
+    <div className="notice-card"><ShieldCheck size={18}/><p>Rewards are added only after our systems verify the required activity. Ad progress counts unique, paid impressions confirmed by Monetag.</p></div>
   </div>;
 }
-
 function BoxesPage({ user, onOpen, opening, revealing, reward, onRevealComplete, rewardModalOpen, onDismissReward, soundOn, onToggleSound }) {
   const count = user?.boxes ?? 0;
   const busy = opening || revealing;
