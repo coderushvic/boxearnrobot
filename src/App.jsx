@@ -63,8 +63,7 @@ function HomePage({ user, stats, checkedIn, checkinDay, onNavigate, onCheckIn, c
   </div>;
 }
 
-function TasksPage({ tasks, onSubmit, submitting, onWatchAd, watchingAd, adStats }) {
-  const adProgress = Math.min(100, ((adStats?.progressToNextReward ?? 0) / 200) * 100);
+function TasksPage({ tasks, onSubmit, submitting, onWatchAd, watchingAd, adStats, adCooldown }) {
   const communityItems = [
     { label: "Follow us on Facebook", detail: "Get updates, announcements and community news.", Icon: Facebook },
     { label: "Join our Telegram", detail: "Stay close to BOX EARN announcements and updates.", Icon: Send },
@@ -79,14 +78,14 @@ function TasksPage({ tasks, onSubmit, submitting, onWatchAd, watchingAd, adStats
     <div className="action-task-list">
       <article className="action-task ad-action-task">
         <span className="action-task-icon"><PlayCircle size={19}/></span>
-        <div className="action-task-copy"><div className="action-task-title"><b>Watch ads</b><span className="action-tag reward-tag">200 ADS · 50 BOXES</span></div><p>Watch rewarded ads and build progress towards your next box bonus.</p><div className="ad-progress-track"><i style={{width:adProgress+"%"}}/></div><small className="ad-progress-label">{adStats?.progressToNextReward ?? 0} of 200 verified ads completed</small></div>
-        <button className="action-task-button" disabled={!hasMonetagZone || watchingAd} onClick={onWatchAd}>{!hasMonetagZone?"Soon":watchingAd?"…":"Watch"}</button>
+        <div className="action-task-copy"><div className="action-task-title"><b>Watch ads</b><span className="action-tag reward-tag">+1 BOX PER AD</span></div><p>Watch a short ad and earn a mystery box.</p>{adCooldown>0 && <small className="ad-cooldown-label">Next ad available in {Math.floor(adCooldown/60)}:{String(adCooldown%60).padStart(2,"0")}</small>}</div>
+        <button className="action-task-button" disabled={!hasMonetagZone || watchingAd || adCooldown>0} onClick={onWatchAd}>{watchingAd?"…":adCooldown>0?"Wait":"Watch"}</button>
       </article>
       {communityItems.map(({label,detail,Icon})=><article className="action-task community-action" key={label}>
         <span className="action-task-icon community-icon"><Icon size={18}/></span><div className="action-task-copy"><div className="action-task-title"><b>{label}</b><span className="action-tag coming-tag">COMING SOON</span></div><p>{detail}</p></div><span className="action-lock"><LockKeyhole size={14}/></span>
       </article>)}
     </div>
-    <div className="notice-card"><ShieldCheck size={18}/><p>Rewards are added only after our systems verify the required activity. Ad progress counts unique, paid impressions confirmed by Monetag.</p></div>
+    <div className="notice-card"><ShieldCheck size={18}/><p>Complete activities to collect more mystery boxes. Rewards are added after each activity is confirmed.</p></div>
   </div>;
 }
 function BoxesPage({ user, onOpen, opening, revealing, reward, onRevealComplete, rewardModalOpen, onDismissReward, soundOn, onToggleSound }) {
@@ -146,6 +145,7 @@ export default function App() {
   const [referrals,setReferrals]=useState([]);
   const [tasks,setTasks]=useState([]);
   const [adStats,setAdStats]=useState(null);
+  const [adCooldown,setAdCooldown]=useState(0);
   const [activity,setActivity]=useState([]);
   const [activityStats,setActivityStats]=useState(null);
   const [loading,setLoading]=useState(true);
@@ -169,7 +169,7 @@ export default function App() {
 
   async function refreshData() {
     const results=await Promise.all([apiRequest("/api/me"),apiRequest("/api/referrals"),apiRequest("/api/tasks"),apiRequest("/api/ads/stats"),apiRequest("/api/activity")]);
-    setUser(results[0].user); setStats(results[1].stats); setReferrals(results[1].referrals||[]); setTasks(results[2].tasks||[]); setAdStats(results[3].stats); setActivity(results[4].activity||[]); setActivityStats(results[4].stats||null);
+    setUser(results[0].user); setStats(results[1].stats); setReferrals(results[1].referrals||[]); setTasks(results[2].tasks||[]); setAdStats(results[3].stats); setAdCooldown(results[3].stats?.cooldownRemainingSeconds||0); setActivity(results[4].activity||[]); setActivityStats(results[4].stats||null);
   }
   useEffect(()=>{
     let live=true;
@@ -184,6 +184,12 @@ export default function App() {
     })();
     return ()=>{live=false;};
   },[]);
+
+  useEffect(()=>{
+    if(adCooldown<=0)return undefined;
+    const timer=window.setInterval(()=>setAdCooldown(value=>Math.max(0,value-1)),1000);
+    return ()=>window.clearInterval(timer);
+  },[adCooldown>0]);
 
   const dateParts=Object.fromEntries(new Intl.DateTimeFormat("en-GB",{timeZone:"Africa/Lagos",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date()).map(p=>[p.type,p.value]));
   const today=dateParts.year+"-"+dateParts.month+"-"+dateParts.day;
@@ -264,15 +270,28 @@ export default function App() {
     } finally { setOpening(false); }
   }
   async function watchAd() {
-    if (watchingAd || !hasMonetagZone) return;
+    if (watchingAd || !hasMonetagZone || adCooldown>0) return;
     setWatchingAd(true); setNotice("");
+    const viewsBefore=adStats?.verifiedViews||0;
     try {
       const session=await apiRequest("/api/ads/session",{method:"POST",body:"{}"});
+      setAdCooldown(120);
       await playRewardedAd(session.ymid);
+      let verified=false;
+      for(let attempt=0;attempt<12;attempt++){
+        await new Promise(resolve=>window.setTimeout(resolve,1000));
+        const result=await apiRequest("/api/ads/stats");
+        if((result.stats?.verifiedViews||0)>viewsBefore){verified=true;break;}
+      }
       await refreshData();
-      setNotice("Ad closed. Monetag will credit progress only after its server confirms a paid impression.");
-    } catch(e) { setNotice(e.message || "The ad could not be verified. Please try again later."); }
-    finally { setWatchingAd(false); }
+      setNotice(verified?"Your mystery box has been added!":"Your ad is awaiting confirmation. Your box will appear automatically once the view is verified.");
+    } catch(e) {
+      if(e?.status===429 || e?.code==="ad_cooldown") {
+        const seconds=e.retryAfterSeconds||120;
+        setAdCooldown(seconds);
+        setNotice("Please wait "+Math.ceil(seconds/60)+" minute(s) before watching another ad.");
+      } else setNotice(e.message || "The ad could not be started. Please try again later.");
+    } finally { setWatchingAd(false); }
   }
   async function submitTask(taskId) {
     setSubmitting(taskId);
@@ -294,7 +313,7 @@ export default function App() {
     <header className="topbar"><Brand/></header>
     <main key={active} className="main-view">
       {active==="home"&&<HomePage user={user} stats={stats} onNavigate={setActive} checkedIn={checkedIn} checkinDay={checkinDay} onCheckIn={checkIn} checkingIn={checkingIn} onWithdraw={()=>setWithdrawOpen(true)}/>}
-      {active==="tasks"&&<TasksPage tasks={tasks} onSubmit={submitTask} submitting={submitting} onWatchAd={watchAd} watchingAd={watchingAd} adStats={adStats}/>}
+      {active==="tasks"&&<TasksPage tasks={tasks} onSubmit={submitTask} submitting={submitting} onWatchAd={watchAd} watchingAd={watchingAd} adStats={adStats} adCooldown={adCooldown}/>}
       {active==="boxes"&&<BoxesPage user={user} onOpen={openBox} opening={opening} revealing={revealing} reward={lastReward} onRevealComplete={finishReveal} rewardModalOpen={rewardModalOpen} onDismissReward={()=>setRewardModalOpen(false)} soundOn={soundOn} onToggleSound={()=>setSoundOn(v=>!v)}/>}
       {active==="invite"&&<InvitePage user={user} stats={stats} referrals={referrals}/>}
       {active==="profile"&&<ProfilePage user={user} onWithdraw={()=>setWithdrawOpen(true)}/>}
