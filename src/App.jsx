@@ -35,13 +35,13 @@ function SectionTitle({ eyebrow, title, action, onAction }) {
   return <div className="section-title"><div><span className="eyebrow">{eyebrow}</span><h2>{title}</h2></div>{action && <button className="text-action" onClick={onAction}>{action}<ArrowRight size={15}/></button>}</div>;
 }
 
-function HomePage({ onNavigate, checkedIn, onCheckIn }) {
+function HomePage({ onNavigate, checkedIn, onCheckIn, onWithdraw }) {
   return <div className="page-content home-page">
     <div className="welcome-row"><div><div className="eyebrow">FRIDAY, 20 NOVEMBER</div><h1>Good morning<span className="green-dot">.</span></h1><p className="muted">Your next reward is closer than you think.</p></div><button className="icon-button" aria-label="Notifications"><Bell size={19}/><i /></button></div>
     <section className="balance-card">
       <div className="balance-card-top"><span className="balance-caption"><Wallet size={14}/> TOTAL BALANCE</span><span className="secure-label"><ShieldCheck size={13}/> SECURE WALLET</span></div>
       <div className="balance-amount">0.00 <span>USDT</span></div>
-      <div className="balance-bottom"><span className="muted small">Your available earnings</span><button className="withdraw-button" onClick={() => onNavigate("profile")}><ArrowDownToLine size={15}/> Withdraw</button></div>
+      <div className="balance-bottom"><span className="muted small">Your available earnings</span><button className="withdraw-button" onClick={onWithdraw}><ArrowDownToLine size={15}/> Withdraw</button></div>
       <div className="balance-orb" />
     </section>
     <div className="quick-stats">
@@ -125,7 +125,7 @@ export default function App() {
   return <div className="app-shell">
     <header className="topbar"><Brand/><button className="top-avatar" onClick={()=>setActive("profile")} aria-label="Open profile"><UserRound size={17}/></button></header>
     <main key={active} className="main-view">
-      {active==="home"&&<HomePage onNavigate={setActive} checkedIn={checkedIn} onCheckIn={()=>setCheckedIn(true)}/>}
+      {active==="home"&&<HomePage onNavigate={setActive} checkedIn={checkedIn} onCheckIn={()=>setCheckedIn(true)} onWithdraw={()=>setWithdrawOpen(true)}/>}
       {active==="tasks"&&<TasksPage/>}
       {active==="boxes"&&<BoxesPage/>}
       {active==="invite"&&<InvitePage/>}
