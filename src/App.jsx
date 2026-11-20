@@ -74,7 +74,8 @@ function HomePage({ user, stats, activity = [], checkedIn, checkinDay, onNavigat
   </div>;
 }
 
-function TasksPage({ tasks, onSubmit, submitting, onWatchAd, watchingAd, adCooldown }) {
+function TasksPage({ tasks, hiddenTaskIds = [], onSubmit, submitting, onWatchAd, watchingAd, adCooldown }) {
+  const visibleTasks = tasks.filter(task => !hiddenTaskIds.includes(task.id));
   const communityItems = [
     { label: "Follow us on Facebook", detail: "Get updates, announcements and community news.", Icon: Facebook, platform:"facebook", href:import.meta.env.VITE_FACEBOOK_URL },
     { label: "Join our Telegram", detail: "Stay close to BOX EARN announcements and updates.", Icon: Send, platform:"telegram", href:import.meta.env.VITE_TELEGRAM_CHANNEL_URL },
@@ -82,9 +83,9 @@ function TasksPage({ tasks, onSubmit, submitting, onWatchAd, watchingAd, adCoold
     { label: "Follow us on Instagram", detail: "See BOX EARN news and community highlights.", Icon: Instagram, platform:"instagram", href:import.meta.env.VITE_INSTAGRAM_URL }
   ].map(item => ({
     ...item,
-    task: tasks.find(task => String(task.id).toLowerCase().includes(item.platform) || String(task.task_type).toLowerCase() === item.platform)
+    task: visibleTasks.find(task => String(task.id).toLowerCase().includes(item.platform) || String(task.task_type).toLowerCase() === item.platform)
   }));
-  const generalTasks = tasks.filter(task => !communityItems.some(item => item.task?.id === task.id));
+  const generalTasks = visibleTasks.filter(task => !communityItems.some(item => item.task?.id === task.id));
   const completionButton = task => <button className="action-task-button" disabled={submitting===task.id} onClick={()=>onSubmit(task.id)}>{submitting===task.id?"Sending…":"I've completed it"}</button>;
   return <div className="page-content subpage tasks-page">
     <div className="page-intro"><span className="eyebrow">YOUR EARNING HUB</span><h1>Tasks<span className="green-dot">.</span></h1><p className="muted">Small actions. More chances to earn.</p></div>
@@ -163,6 +164,7 @@ export default function App() {
   const [stats,setStats]=useState(null);
   const [referrals,setReferrals]=useState([]);
   const [tasks,setTasks]=useState([]);
+  const [hiddenTaskIds,setHiddenTaskIds]=useState([]);
   const [adStats,setAdStats]=useState(null);
   const [adCooldown,setAdCooldown]=useState(0);
   const [activity,setActivity]=useState([]);
@@ -315,6 +317,7 @@ export default function App() {
   async function submitTask(taskId) {
     setSubmitting(taskId);
     const result=await perform(()=>apiRequest("/api/tasks/submit",{method:"POST",body:JSON.stringify({taskId})}),"Task submitted for review.");
+    if(result?.ok) setHiddenTaskIds(ids=>ids.includes(taskId)?ids:[...ids,taskId]);
     setSubmitting("");
     return result;
   }
@@ -333,7 +336,7 @@ export default function App() {
     <header className="topbar"><Brand/></header>
     <main key={active} className="main-view">
       {active==="home"&&<HomePage user={user} stats={stats} activity={activity} onNavigate={setActive} checkedIn={checkedIn} checkinDay={checkinDay} onCheckIn={checkIn} checkingIn={checkingIn} onWithdraw={()=>setWithdrawOpen(true)}/>}
-      {active==="tasks"&&<TasksPage tasks={tasks} onSubmit={submitTask} submitting={submitting} onWatchAd={watchAd} watchingAd={watchingAd} adCooldown={adCooldown}/>}
+      {active==="tasks"&&<TasksPage tasks={tasks} hiddenTaskIds={hiddenTaskIds} onSubmit={submitTask} submitting={submitting} onWatchAd={watchAd} watchingAd={watchingAd} adCooldown={adCooldown}/>}
       {active==="boxes"&&<BoxesPage user={user} onOpen={openBox} opening={opening} revealing={revealing} reward={lastReward} onRevealComplete={finishReveal} rewardModalOpen={rewardModalOpen} onDismissReward={()=>setRewardModalOpen(false)} soundOn={soundOn} onToggleSound={()=>setSoundOn(v=>!v)}/>}
       {active==="invite"&&<InvitePage user={user} stats={stats} referrals={referrals}/>}
       {active==="profile"&&<ProfilePage user={user} onWithdraw={()=>setWithdrawOpen(true)}/>}
