@@ -37,7 +37,7 @@ function SectionTitle({ eyebrow, title, action, onAction }) {
   return <div className="section-title"><div><span className="eyebrow">{eyebrow}</span><h2>{title}</h2></div>{action && <button className="text-action" onClick={onAction}>{action}<ArrowRight size={15}/></button>}</div>;
 }
 
-function HomePage({ user, stats, checkedIn, checkinDay, onNavigate, onCheckIn, checkingIn, onWithdraw }) {
+function HomePage({ user, stats, activity = [], checkedIn, checkinDay, onNavigate, onCheckIn, checkingIn, onWithdraw }) {
   const nextDay = checkinDay;
   return <div className="page-content home-page">
     <div className="welcome-row"><div><div className="eyebrow">YOUR BOX EARN DASHBOARD</div><h1>Good morning<span className="green-dot">.</span></h1><p className="muted">Your next reward is closer than you think.</p></div><button className="icon-button" aria-label="Notifications"><Bell size={19}/><i /></button></div>
@@ -58,7 +58,19 @@ function HomePage({ user, stats, checkedIn, checkinDay, onNavigate, onCheckIn, c
       <div className="earn-row" onClick={() => onNavigate("tasks")} role="button" tabIndex={0}><span className="earn-icon cyan-bg"><PlayCircle size={19}/></span><div><b>Watch rewarded ads</b><small>Earn a mystery box with every completed ad.</small></div><ArrowRight size={17}/></div>
     </section>
     <div className="referral-strip" onClick={() => onNavigate("invite")} role="button" tabIndex={0}><span className="referral-glyph"><Users size={20}/></span><div><b>Good things are better shared</b><small>Invite a friend and earn a mystery box.</small></div><ArrowRight size={17}/></div>
-    <div className="activity-footer"><span><History size={14}/> Recent activity</span><span className="muted">Your rewards are stored securely.</span></div>
+    <section className="home-activity">
+      <SectionTitle eyebrow="YOUR REWARD HISTORY" title="Recent activity"/>
+      {activity.length ? <div className="activity-list">{activity.slice(0,4).map((item,index)=>{
+        const labels={welcome_bonus:"Welcome bonus",daily_checkin:"Daily check-in",box_opened:"Mystery box opened",task_approved:"Task reward",referral_reward:"Referral reward",withdrawal_requested:"Withdrawal requested",withdrawal_refund:"Withdrawal refund",monetag_reward:"Ad reward"};
+        const boxDelta=Number(item.boxes_delta||0);
+        const amount=Number(item.amount_micro||0)/1000000;
+        return <div className="activity-item" key={item.reference||item.created_at||index}>
+          <span className={"activity-item-icon "+(item.event_type==="box_opened"?"gold":"")}><History size={15}/></span>
+          <span className="activity-item-copy"><b>{labels[item.event_type]||"Account activity"}</b><small>{new Date(item.created_at).toLocaleDateString("en-GB",{day:"numeric",month:"short"})}</small></span>
+          <span className="activity-item-value">{amount>0?"+"+amount.toFixed(2)+" USDT":boxDelta!==0?(boxDelta>0?"+":"")+boxDelta+" "+(Math.abs(boxDelta)===1?"box":"boxes"):"—"}</span>
+        </div>;
+      })}</div> : <div className="activity-empty"><History size={16}/><span>Your rewards and account activity will appear here.</span></div>}
+    </section>
   </div>;
 }
 
@@ -316,7 +328,7 @@ export default function App() {
   return <div className="app-shell">
     <header className="topbar"><Brand/></header>
     <main key={active} className="main-view">
-      {active==="home"&&<HomePage user={user} stats={stats} onNavigate={setActive} checkedIn={checkedIn} checkinDay={checkinDay} onCheckIn={checkIn} checkingIn={checkingIn} onWithdraw={()=>setWithdrawOpen(true)}/>}
+      {active==="home"&&<HomePage user={user} stats={stats} activity={activity} onNavigate={setActive} checkedIn={checkedIn} checkinDay={checkinDay} onCheckIn={checkIn} checkingIn={checkingIn} onWithdraw={()=>setWithdrawOpen(true)}/>}
       {active==="tasks"&&<TasksPage tasks={tasks} onSubmit={submitTask} submitting={submitting} onWatchAd={watchAd} watchingAd={watchingAd} adCooldown={adCooldown}/>}
       {active==="boxes"&&<BoxesPage user={user} onOpen={openBox} opening={opening} revealing={revealing} reward={lastReward} onRevealComplete={finishReveal} rewardModalOpen={rewardModalOpen} onDismissReward={()=>setRewardModalOpen(false)} soundOn={soundOn} onToggleSound={()=>setSoundOn(v=>!v)}/>}
       {active==="invite"&&<InvitePage user={user} stats={stats} referrals={referrals}/>}
