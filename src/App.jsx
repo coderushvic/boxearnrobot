@@ -26,12 +26,11 @@ function BoxArtwork({ revealing = false, onRevealComplete, inactive = false, box
     <span className="custom-gift-shadow" aria-hidden="true" />
     <div className="custom-gift" aria-hidden="true">
       <span className="custom-gift-side" />
-      <span className="custom-gift-body"><i className="custom-gift-ribbon" /><i className="custom-gift-emblem"><Gift size={23}/></i></span>
+      <span className="custom-gift-body"><i className="custom-gift-ribbon" /><i className="custom-gift-emblem"><Gift size={23}/></i>{boxCount > 0 && <span className="home-box-count" aria-label={boxCount + " boxes available"}>{boxCount}</span>}</span>
       <span className="custom-gift-lid"><i className="custom-lid-ribbon" /></span>
       <span className="custom-bow"><i /><i /><b /></span>
       <span className="custom-gift-spark custom-spark-a">✦</span><span className="custom-gift-spark custom-spark-b">✧</span>
     </div>
-    {boxCount !== undefined && <span className="home-box-count" aria-label={boxCount + " boxes available"}><Gift size={12}/>{boxCount}</span>}
   </div>;
 }
 function SectionTitle({ eyebrow, title, action, onAction }) {
@@ -43,13 +42,12 @@ function HomePage({ user, stats, checkedIn, checkinDay, onNavigate, onCheckIn, c
   return <div className="page-content home-page">
     <div className="welcome-row"><div><div className="eyebrow">YOUR BOX EARN DASHBOARD</div><h1>Good morning<span className="green-dot">.</span></h1><p className="muted">Your next reward is closer than you think.</p></div><button className="icon-button" aria-label="Notifications"><Bell size={19}/><i /></button></div>
     <section className="balance-card"><div className="balance-card-top"><span className="balance-caption"><Wallet size={14}/> TOTAL BALANCE</span><span className="secure-label"><ShieldCheck size={13}/> SECURE WALLET</span></div><div className="balance-amount">{Number(user?.balanceUsdt || 0).toFixed(2)} <span>USDT</span></div><div className="balance-bottom"><span className="muted small">Your available earnings</span><button className="withdraw-button" onClick={onWithdraw}><ArrowDownToLine size={15}/> Withdraw</button></div><div className="balance-orb" /></section>
-    <div className="quick-stats">
-      <div className="quick-stat" onClick={() => onNavigate("boxes")} role="button" tabIndex={0}><span className="stat-icon emerald"><Gift size={17}/></span><div><small>AVAILABLE BOXES</small><strong>{user?.boxes ?? 0} <em>boxes</em></strong></div><ChevronRight size={16}/></div>
-      <div className="quick-stat" onClick={() => onNavigate("invite")} role="button" tabIndex={0}><span className="stat-icon cyan"><Users size={17}/></span><div><small>REFERRALS</small><strong>{stats?.total ?? 0} <em>friends</em></strong></div><ChevronRight size={16}/></div>
+    <div className="quick-stats referral-only">
+      <div className="quick-stat" onClick={() => onNavigate("invite")} role="button" tabIndex={0}><span className="stat-icon cyan"><Users size={17}/></span><div><small>YOUR REFERRALS</small><strong>{stats?.total ?? 0} <em>friends</em></strong></div><ChevronRight size={16}/></div>
     </div>
     <section className="checkin-card"><div className="checkin-head"><div className="checkin-icon"><CalendarCheck2 size={18}/></div><div><span className="eyebrow">DAILY REWARD</span><h3>Daily check-in</h3></div><span className="streak-pill">DAY {nextDay} OF 7</span></div>
-      <div className="checkin-days">{[1,2,3,4,5,6,7].map((day,i)=><div className={"day-reward " + (i===nextDay-1?"today ":"") + (checkedIn && day===nextDay?"claimed":"") + (day<nextDay || (checkedIn && day===nextDay)?" completed":"")} key={day}><span>DAY {day}</span><strong>{day}</strong><small>{day===1?"BOX":"BOXES"}</small>{(day<nextDay || (checkedIn && day===nextDay)) && <i><Check size={11}/></i>}</div>)}</div>
-      <button className={"primary-button checkin-button " + (checkedIn?"button-done":"")} onClick={onCheckIn} disabled={checkedIn || checkingIn}>{checkedIn?<><CheckCircle2 size={17}/> Checked in today</>:checkingIn?"Claiming reward…":<>Claim today's box <ArrowRight size={16}/></>}</button>
+      <div className="checkin-days">{[1,2,3,4,5,6,7].map((day,i)=><div className={"day-reward " + (i===nextDay-1?"today ":"") + (checkedIn && day===nextDay?"claimed":"") + (day<nextDay || (checkedIn && day===nextDay)?" completed":"")} key={day}><span>DAY {day}</span><strong>+{day}</strong><small>{day===1?"BOX":"BOXES"}</small>{(day<nextDay || (checkedIn && day===nextDay)) && <i><Check size={11}/></i>}</div>)}</div>
+      <button className={"primary-button checkin-button " + (checkedIn?"button-done":"")} onClick={onCheckIn} disabled={checkedIn || checkingIn}>{checkedIn?<><CheckCircle2 size={17}/> Checked in today</>:checkingIn?"Claiming reward…":<>Claim +{nextDay} {nextDay===1?"box":"boxes"} <ArrowRight size={16}/></>}</button>
       <p className="fine-print">Build your streak to earn up to 7 boxes.</p>
     </section>
     <section className="mystery-section"><SectionTitle eyebrow="A LITTLE MYSTERY. A REAL REWARD." title="Your mystery boxes" action="View all" onAction={() => onNavigate("boxes")}/>
@@ -64,13 +62,16 @@ function HomePage({ user, stats, checkedIn, checkinDay, onNavigate, onCheckIn, c
   </div>;
 }
 
-function TasksPage({ tasks, onSubmit, submitting, onWatchAd, watchingAd, adStats, adCooldown }) {
+function TasksPage({ tasks, onSubmit, submitting, onWatchAd, watchingAd, adCooldown }) {
   const communityItems = [
     { label: "Follow us on Facebook", detail: "Get updates, announcements and community news.", Icon: Facebook, platform:"facebook", href:import.meta.env.VITE_FACEBOOK_URL },
     { label: "Join our Telegram", detail: "Stay close to BOX EARN announcements and updates.", Icon: Send, platform:"telegram", href:import.meta.env.VITE_TELEGRAM_CHANNEL_URL },
     { label: "Subscribe on YouTube", detail: "Watch product updates and helpful walkthroughs.", Icon: Youtube, platform:"youtube", href:import.meta.env.VITE_YOUTUBE_URL },
     { label: "Follow us on Instagram", detail: "See BOX EARN news and community highlights.", Icon: Instagram, platform:"instagram", href:import.meta.env.VITE_INSTAGRAM_URL }
-  ];
+  ].map(item => ({
+    ...item,
+    task: tasks.find(task => task.id === item.platform || task.id === item.platform + "_follow" || task.task_type === item.platform)
+  }));
   return <div className="page-content subpage tasks-page">
     <div className="page-intro"><span className="eyebrow">YOUR EARNING HUB</span><h1>Tasks<span className="green-dot">.</span></h1><p className="muted">Small actions. More chances to earn.</p></div>
     <SectionTitle eyebrow="EARN BOXES" title="Available tasks"/>
@@ -82,9 +83,9 @@ function TasksPage({ tasks, onSubmit, submitting, onWatchAd, watchingAd, adStats
         <div className="action-task-copy"><div className="action-task-title"><b>Watch ads</b></div><p>Watch a short ad and earn a mystery box.</p>{adCooldown>0 && <small className="ad-cooldown-label">Next ad available in {Math.floor(adCooldown/60)}:{String(adCooldown%60).padStart(2,"0")}</small>}<span className="task-box-reward"><Gift size={14}/> 1 box per ad</span></div>
         <button className="action-task-button" disabled={!hasMonetagZone || watchingAd || adCooldown>0} onClick={onWatchAd}>{watchingAd?"…":adCooldown>0?"Wait":"Watch"}</button>
       </article>
-      {communityItems.map(({label,detail,Icon,platform,href})=><article className={"action-task community-action community-"+platform} key={label}>
+      {communityItems.map(({label,detail,Icon,platform,href,task})=><article className={"action-task community-action community-"+platform} key={label}>
         <span className={"action-task-icon community-icon "+platform+"-icon"}><Icon size={19}/></span>
-        <div className="action-task-copy"><div className="action-task-title"><b>{label}</b></div><p>{detail}</p><span className="task-box-reward"><Gift size={14}/> Reward shown after task setup</span></div>
+        <div className="action-task-copy"><div className="action-task-title"><b>{label}</b></div><p>{detail}</p>{task && <span className="task-box-reward"><Gift size={14}/> {task.reward_boxes} {Number(task.reward_boxes)===1?"box":"boxes"}</span>}</div>
         <a className="action-task-button community-action-button" href={href || undefined} target={href ? "_blank" : undefined} rel={href ? "noopener noreferrer" : undefined} aria-disabled={!href} onClick={e=>{if(!href)e.preventDefault();}}>{href?"Open":"Follow"}</a>
       </article>)}
     </div>
@@ -316,7 +317,7 @@ export default function App() {
     <header className="topbar"><Brand/></header>
     <main key={active} className="main-view">
       {active==="home"&&<HomePage user={user} stats={stats} onNavigate={setActive} checkedIn={checkedIn} checkinDay={checkinDay} onCheckIn={checkIn} checkingIn={checkingIn} onWithdraw={()=>setWithdrawOpen(true)}/>}
-      {active==="tasks"&&<TasksPage tasks={tasks} onSubmit={submitTask} submitting={submitting} onWatchAd={watchAd} watchingAd={watchingAd} adStats={adStats} adCooldown={adCooldown}/>}
+      {active==="tasks"&&<TasksPage tasks={tasks} onSubmit={submitTask} submitting={submitting} onWatchAd={watchAd} watchingAd={watchingAd} adCooldown={adCooldown}/>}
       {active==="boxes"&&<BoxesPage user={user} onOpen={openBox} opening={opening} revealing={revealing} reward={lastReward} onRevealComplete={finishReveal} rewardModalOpen={rewardModalOpen} onDismissReward={()=>setRewardModalOpen(false)} soundOn={soundOn} onToggleSound={()=>setSoundOn(v=>!v)}/>}
       {active==="invite"&&<InvitePage user={user} stats={stats} referrals={referrals}/>}
       {active==="profile"&&<ProfilePage user={user} onWithdraw={()=>setWithdrawOpen(true)}/>}
