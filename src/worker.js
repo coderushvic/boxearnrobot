@@ -97,7 +97,7 @@ async function monetagPostback(request, env) {
   if (!safeEqual(params.get("secret") || "", env.MONETAG_POSTBACK_SECRET)) return fail("Invalid postback secret.", 403, "invalid_postback_secret");
   const eventType = params.get("event_type") || "";
   const rewardType = params.get("reward_event_type") || "";
-  if (eventType !== "impression" || rewardType !== "valued") return json({ ok: true, ignored: true });
+  if (!["impression", "click"].includes(eventType) || rewardType !== "valued") return json({ ok: true, ignored: true });
   const ymid = params.get("ymid") || "";
   const telegramId = params.get("telegram_id") || "";
   const match = ymid.match(/^be_(\d+)_([a-f0-9]{16,64})$/);
