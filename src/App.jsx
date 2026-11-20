@@ -31,6 +31,7 @@ function BoxArtwork({ revealing = false, onRevealComplete, inactive = false, box
       <span className="custom-bow"><i /><i /><b /></span>
       <span className="custom-gift-spark custom-spark-a">✦</span><span className="custom-gift-spark custom-spark-b">✧</span>
     </div>
+    {boxCount !== undefined && <span className="home-box-count" aria-label={boxCount + " boxes available"}><Gift size={12}/>{boxCount}</span>}
   </div>;
 }
 function SectionTitle({ eyebrow, title, action, onAction }) {
