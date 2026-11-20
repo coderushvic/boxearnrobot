@@ -107,7 +107,7 @@ async function api(request, env) {
     const id = String(t.id);
     const referral = verified.startParam.startsWith("ref_") ? verified.startParam.slice(4) : "";
     const code = randomHex(8);
-    await env.DB.batch([
+    const authInsertResults = await env.DB.batch([
       env.DB.prepare(`INSERT OR IGNORE INTO users (telegram_id, username, first_name, last_name, photo_url, referral_code, referred_by, boxes)
         VALUES (?, ?, ?, ?, ?, ?, (SELECT telegram_id FROM users WHERE referral_code = ? AND telegram_id <> ?), 2)`)
         .bind(id, t.username || null, t.first_name || "Telegram user", t.last_name || null, t.photo_url || null, code, referral || "__none__", id),
@@ -120,7 +120,7 @@ async function api(request, env) {
     await env.DB.prepare("UPDATE users SET username = ?, first_name = ?, last_name = ?, photo_url = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE telegram_id = ?")
       .bind(t.username || null, t.first_name || "Telegram user", t.last_name || null, t.photo_url || null, id).run();
     const user = await getUser(env.DB, id);
-    return json({ ok: true, user: presentUser(user), isNewUser: user.created_at && (await env.DB.prepare("SELECT 1 FROM ledger WHERE telegram_id=? AND event_type='welcome_bonus'").bind(id).first()) !== null });
+    return json({ ok: true, user: presentUser(user), isNewUser: Boolean(authInsertResults[0]?.meta?.changes) });
   }
   if (!path.startsWith("/api/")) return null;
   if (!env.DB) return fail("Database is not configured.", 503, "database_not_configured");
