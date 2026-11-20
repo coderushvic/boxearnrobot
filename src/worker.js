@@ -91,11 +91,48 @@ async function authUser(request, env) {
 async function readJson(request) {
   try { return await request.json(); } catch { throw Object.assign(new Error("Request body must be valid JSON."), { status: 400 }); }
 }
+async function monetagPostback(request, env) {
+  if (!env.MONETAG_POSTBACK_SECRET) return fail("Monetag postback secret is not configured.", 503, "monetag_not_configured");
+  const params = new URL(request.url).searchParams;
+  if (!safeEqual(params.get("secret") || "", env.MONETAG_POSTBACK_SECRET)) return fail("Invalid postback secret.", 403, "invalid_postback_secret");
+  const eventType = params.get("event_type") || "";
+  const rewardType = params.get("reward_event_type") || "";
+  if (eventType !== "impression" || rewardType !== "valued") return json({ ok: true, ignored: true });
+  const ymid = params.get("ymid") || "";
+  const telegramId = params.get("telegram_id") || "";
+  const match = ymid.match(/^be_(\\d+)_([a-f0-9]{16,64})$/);
+  if (!match || !telegramId || match[1] !== telegramId) return fail("Invalid Monetag event identifiers.", 400, "invalid_event");
+  const results = await env.DB.batch([
+    env.DB.prepare(`INSERT OR IGNORE INTO ad_events (event_id, telegram_id, provider, verified_views)
+      SELECT ?, ?, 'monetag', 1 WHERE EXISTS (
+        SELECT 1 FROM ad_sessions WHERE ymid = ? AND telegram_id = ? AND expires_at > strftime('%Y-%m-%dT%H:%M:%fZ','now')
+      )`).bind(ymid, telegramId, ymid, telegramId),
+    env.DB.prepare(`UPDATE users SET
+      verified_ad_views = verified_ad_views + 1,
+      boxes = boxes + CASE WHEN ((verified_ad_views + 1) / 200) > ad_boxes_awarded
+        THEN (((verified_ad_views + 1) / 200) - ad_boxes_awarded) * 50 ELSE 0 END,
+      ad_boxes_awarded = CASE WHEN ((verified_ad_views + 1) / 200) > ad_boxes_awarded
+        THEN ((verified_ad_views + 1) / 200) ELSE ad_boxes_awarded END,
+      updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
+      WHERE telegram_id = ? AND changes() = 1`).bind(telegramId),
+    env.DB.prepare(`INSERT OR IGNORE INTO ledger (id, telegram_id, event_type, boxes_delta, reference, metadata)
+      SELECT ?, telegram_id, 'monetag_ads_reward', 50, 'monetag:' || telegram_id || ':' || verified_ad_views, ?
+      FROM users WHERE telegram_id = ? AND verified_ad_views > 0 AND verified_ad_views % 200 = 0 AND changes() = 1`)
+      .bind(crypto.randomUUID(), JSON.stringify({ provider: "monetag", rewardRule: "200_verified_views_for_50_boxes" }), telegramId)
+  ]);
+  if (!results[0]?.meta?.changes) {
+    const session = await env.DB.prepare("SELECT ymid FROM ad_sessions WHERE ymid = ? AND telegram_id = ?").bind(ymid, telegramId).first();
+    if (!session) return fail("Unknown or expired ad session.", 403, "unknown_ad_session");
+    return json({ ok: true, duplicate: true });
+  }
+  return json({ ok: true, accepted: true });
+}
+
 async function api(request, env) {
   const url = new URL(request.url);
   const path = url.pathname;
   if (path === "/api/health" && request.method === "GET") {
-    return json({ ok: true, service: "boxearnrobot", databaseConfigured: Boolean(env.DB), telegramConfigured: Boolean(env.TELEGRAM_BOT_TOKEN), version: "2" });
+    return json({ ok: true, service: "boxearnrobot", databaseConfigured: Boolean(env.DB), telegramConfigured: Boolean(env.TELEGRAM_BOT_TOKEN), version: "3", monetagConfigured: Boolean(env.MONETAG_POSTBACK_SECRET) });
   }
   if (path === "/api/auth" && request.method === "POST") {
     if (!env.DB) return fail("Database is not configured.", 503, "database_not_configured");
@@ -124,11 +161,22 @@ async function api(request, env) {
   }
   if (!path.startsWith("/api/")) return null;
   if (!env.DB) return fail("Database is not configured.", 503, "database_not_configured");
-  if (path === "/api/webhooks/monetag") return fail("Monetag postback verification is not configured yet; no ad rewards have been credited.", 503, "monetag_not_configured");
+  if (path === "/api/webhooks/monetag" && request.method === "GET") return monetagPostback(request, env);
 
   const { account, user } = await authUser(request, env);
   const uid = String(user.id);
 
+  if (path === "/api/ads/session" && request.method === "POST") {
+    const ymid = "be_" + uid + "_" + randomHex(16);
+    await env.DB.prepare("INSERT INTO ad_sessions (ymid, telegram_id, expires_at) VALUES (?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','+48 hours'))")
+      .bind(ymid, uid).run();
+    return json({ ok: true, ymid });
+  }
+  if (path === "/api/ads/stats" && request.method === "GET") {
+    const stats = await env.DB.prepare("SELECT verified_ad_views, ad_boxes_awarded FROM users WHERE telegram_id = ?").bind(uid).first();
+    const views = stats?.verified_ad_views || 0;
+    return json({ ok: true, stats: { verifiedViews: views, boxesEarned: (stats?.ad_boxes_awarded || 0) * 50, progressToNextReward: views % 200, viewsForNextReward: 200 - (views % 200) } });
+  }
   if (path === "/api/me" && request.method === "GET") {
     const fresh = await getUser(env.DB, uid);
     return json({ ok: true, user: presentUser(fresh) });
