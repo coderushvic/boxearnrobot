@@ -113,7 +113,7 @@ function InvitePage({ user, stats, referrals }) {
 }
 
 function ProfilePage({ user, onWithdraw }) {
-  return <div className="page-content subpage"><div className="page-intro"><span className="eyebrow">YOUR ACCOUNT</span><h1>Profile<span className="green-dot">.</span></h1><p className="muted">Manage your wallet and account preferences.</p></div>
+  return <div className="page-content subpage profile-page"><div className="page-intro"><span className="eyebrow">YOUR ACCOUNT</span><h1>Profile<span className="green-dot">.</span></h1><p className="muted">Manage your wallet and account preferences.</p></div>
     <div className="profile-card"><div className="avatar"><UserRound size={25}/></div><div><b>{user?.firstName||"BOX EARN member"}</b><span>{user?.username?"@"+user.username:"Telegram account"}</span></div><span className="member-pill">MEMBER</span></div>
     <div className="wallet-panel"><div className="wallet-panel-head"><span><Wallet size={16}/> WALLET BALANCE</span><span className="secure-label"><LockKeyhole size={12}/> SECURE</span></div><b>{Number(user?.balanceUsdt||0).toFixed(2)} <small>USDT</small></b><p>Minimum withdrawal: $0.10 USDT · BEP20</p><button className="primary-button" onClick={onWithdraw}><ArrowDownToLine size={16}/> Withdraw funds</button></div>
     <SectionTitle eyebrow="ACCOUNT" title="Account settings"/>
