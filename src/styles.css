@@ -368,3 +368,35 @@
 @media(prefers-reduced-motion:reduce){
   .loading-logo-pulse,.loading-heartbeat i,.loading-progress i,.loading-orbit{animation:none!important}
 }
+
+
+/* Clean logo presentation: visually remove the black matte on the dark app surface */
+.brand{background:transparent!important;}
+.brand img{
+  display:block;
+  width:100%;
+  height:auto;
+  object-fit:contain;
+  background:transparent;
+  mix-blend-mode:screen;
+}
+
+/* Stronger, more legible task-section action buttons */
+.action-task .action-task-button.withdraw-button.task-cta,
+.action-task .action-task-button.withdraw-button.task-cta:disabled{
+  background:linear-gradient(105deg,#064b32 0%,#086442 100%);
+  color:#f7f5ee;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.2px;
+  text-shadow:0 1px 1px #0006;
+  box-shadow:0 7px 16px #0006,inset 0 1px #ffffff18;
+  border:1px solid #27a87555;
+}
+@media(max-width:390px){
+  .action-task .action-task-button.withdraw-button.task-cta,
+  .action-task .action-task-button.withdraw-button.task-cta:disabled{
+    font-size:11px;
+    font-weight:900;
+  }
+}
