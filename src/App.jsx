@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowDownToLine, ArrowRight, ArrowUpRight, Bell, CalendarCheck2, Check,
   CheckCircle2, ChevronRight, CircleHelp, Copy, Gift, History, Home,
@@ -19,12 +19,12 @@ const navItems = [
 function Brand() {
   return <div className="brand" aria-label="BOX EARN"><img src="/assets/boxearn/boxearn-logo.webp" alt="BOX EARN" /></div>;
 }
-function BoxArtwork({ revealing = false, onRevealComplete }) {
-  return <div className={"box-stage original-box-artwork" + (revealing ? " revealing" : "")} role="img" aria-label={revealing ? "BOX EARN mystery box opening" : "Original BOX EARN emerald mystery gift box"}>
+function BoxArtwork({ revealing = false, onRevealComplete, inactive = false }) {
+  return <div className={"box-stage original-box-artwork" + (revealing ? " revealing" : "") + (inactive ? " inactive" : "")} role="img" aria-label={revealing ? "BOX EARN mystery gift opening" : "Original BOX EARN emerald mystery gift"}>
     <span className="box-art-glow" aria-hidden="true" />
-    <span className="box-image box-image-closed" aria-hidden="true" />
-    <span className="box-image box-image-slight" aria-hidden="true" />
-    <span className="box-image box-image-open" aria-hidden="true" onAnimationEnd={revealing ? onRevealComplete : undefined} />
+    <img className="box-image box-image-closed" src="/assets/boxearn/close.webp" alt="" draggable="false" />
+    <img className="box-image box-image-slight" src="/assets/boxearn/slightly-open.webp" alt="" draggable="false" />
+    <img className="box-image box-image-open" src="/assets/boxearn/open.webp" alt="" draggable="false" onAnimationEnd={revealing ? onRevealComplete : undefined} />
   </div>;
 }
 function SectionTitle({ eyebrow, title, action, onAction }) {
@@ -67,22 +67,32 @@ function TasksPage({ tasks, onSubmit, submitting, onWatchAd, watchingAd, adStats
   </div>;
 }
 
-function BoxesPage({ user, activity = [], activityStats, onOpen, opening, revealing, reward, onRevealComplete }) {
-  return <div className="page-content subpage"><div className="page-intro"><span className="eyebrow">THE REWARD REVEAL</span><h1>Mystery boxes<span className="green-dot">.</span></h1><p className="muted">Every box holds a little surprise.</p></div>
-    <div className="boxes-hero"><span className="limited-tag"><Sparkles size={12}/> YOUR BOX COLLECTION</span><BoxArtwork revealing={revealing} onRevealComplete={onRevealComplete}/><div className="boxes-count"><b>{user?.boxes ?? 0}</b><span>BOXES AVAILABLE</span></div><h2>{reward?"Congratulations!":"Ready for a surprise?"}</h2><p>{reward?"Your reward has been added to your account balance.":"Open a box to reveal a random USDT reward between $0.05 and $0.09."}</p>{reward&&<div className="reward-chip"><Sparkles size={13}/> You won {reward} USDT</div>}<button className="primary-button" onClick={onOpen} disabled={opening || revealing || !(user?.boxes>0)}>{opening?"Opening securely…":revealing?"Revealing your reward…":user?.boxes>0?"Open a mystery box":"No boxes available"}<ArrowRight size={16}/></button><small className="fine-print">Every opening is recorded in your account ledger.</small></div>
-    <div className="reward-range"><span>REWARD RANGE</span><b>$0.05 – $0.09 <small>USDT</small></b></div>
-    <div className="box-stats-grid">
-      <div className="box-stat"><span>AVAILABLE</span><b>{user?.boxes ?? 0}</b><small>ready to open</small></div>
-      <div className="box-stat"><span>OPENED</span><b>{activityStats?.boxesOpened ?? 0}</b><small>boxes revealed</small></div>
-      <div className="box-stat"><span>BOXES EARNED</span><b>{activityStats?.boxesEarned ?? 0}</b><small>from recent activity</small></div>
-    </div>
-    <SectionTitle eyebrow="YOUR HISTORY" title="Recent box activity"/>
-    {activity.length ? <div className="box-activity-list">{activity.slice(0,12).map((item,index)=>{
-      const opened=item.event_type==="box_opened";
-      const title=opened?"Mystery box opened":item.event_type==="daily_checkin"?"Daily check-in reward":item.event_type==="welcome_bonus"?"Welcome bonus":item.event_type==="task_reward"?"Task reward":item.event_type==="referral_reward"?"Referral reward":item.event_type==="monetag_ads_reward"?"Ad milestone reward":item.event_type.replaceAll("_"," ");
-      const delta=Number(item.boxes_delta||0);
-      return <div className="box-activity-item" key={item.reference||index}><span className={"box-activity-icon "+(opened?"opened":"")}><Gift size={16}/></span><div><b>{title}</b><small>{new Date(item.created_at).toLocaleString()}</small></div><strong className={delta<0?"negative":""}>{delta>0?"+":""}{delta} {Math.abs(delta)===1?"box":"boxes"}</strong></div>;
-    })}</div> : <div className="empty-state"><History size={22}/><b>No box activity yet</b><span>Your check-ins, rewards and box openings will appear here.</span></div>}
+function BoxesPage({ user, onOpen, opening, revealing, reward, onRevealComplete, rewardModalOpen, onDismissReward, soundOn, onToggleSound }) {
+  const count = user?.boxes ?? 0;
+  const busy = opening || revealing;
+  return <div className="page-content subpage boxes-page">
+    <div className="boxes-heading"><span className="eyebrow">A GIFT, JUST FOR YOU</span><h1>The Mystery Box<span className="green-dot">.</span></h1><p className="muted">A little anticipation. A lovely surprise.</p></div>
+    <section className={"boxes-hero premium-box-hero" + (busy ? " is-opening" : "") + (count ? " has-boxes" : " is-empty")}>
+      <div className="gift-halo" aria-hidden="true"></div>
+      <div className="box-counter"><span className="counter-label">YOUR GIFTS</span><strong>{count.toString().padStart(2,"0")}</strong><span className="counter-caption">{count===1?"BOX WAITING FOR YOU":"BOXES WAITING FOR YOU"}</span></div>
+      <button className="sound-toggle" type="button" onClick={onToggleSound} aria-label={soundOn?"Mute reward sound":"Enable reward sound"}><span>{soundOn?"SOUND ON":"SOUND OFF"}</span><i>{soundOn?"♪":"×"}</i></button>
+      <div className="premium-box-stage">
+        <BoxArtwork revealing={revealing} onRevealComplete={onRevealComplete} inactive={!count && !revealing}/>
+      </div>
+      <div className="box-invitation">{count>0 ? <><h2>Your present is waiting.</h2><p>Take a breath. Make a wish. See what's inside.</p></> : <><h2>Your gift shelf is resting.</h2><p>Earn more boxes and come back for your next surprise.</p></>}</div>
+      <button className={"primary-button premium-open-button" + (!count?" is-disabled":"")} onClick={onOpen} disabled={busy || count===0}>{opening?"Preparing your gift…":revealing?"Unwrapping your surprise…":count>0?"Unwrap your gift":"No boxes available"}{count>0&&!busy&&<Sparkles size={16}/>}</button>
+      <span className="box-footnote">{count>0?"Each box reveals a real USDT reward.":"Your next surprise is only a few tasks away."}</span>
+    </section>
+    {rewardModalOpen && <div className="reward-backdrop" role="dialog" aria-modal="true" aria-label="Your mystery box reward">
+      <div className="reward-confetti" aria-hidden="true">{Array.from({length:34},(_,i)=><i key={i} style={{"--i":i}} />)}</div>
+      <div className="reward-popup">
+        <div className="reward-popup-glow"></div><span className="reward-kicker"><Sparkles size={13}/> A LITTLE SOMETHING FOR YOU</span>
+        <div className="reward-gift-mark"><Gift size={30}/></div><h2>You found a reward!</h2><p>Your mystery gift contained</p>
+        <strong className="reward-amount">+{reward} <small>USDT</small></strong>
+        <span className="reward-added"><CheckCircle2 size={14}/> Added to your balance</span>
+        <button className="primary-button" onClick={onDismissReward}>That made my day <Sparkles size={15}/></button>
+      </div>
+    </div>}
   </div>;
 }
 
@@ -126,6 +136,9 @@ export default function App() {
   const [lastReward,setLastReward]=useState("");
   const [revealing,setRevealing]=useState(false);
   const [pendingReward,setPendingReward]=useState("");
+  const [rewardModalOpen,setRewardModalOpen]=useState(false);
+  const [soundOn,setSoundOn]=useState(true);
+  const rewardAudio=useRef(null);
   const [withdrawOpen,setWithdrawOpen]=useState(false);
   const [amount,setAmount]=useState("0.10");
   const [wallet,setWallet]=useState("");
@@ -169,11 +182,28 @@ export default function App() {
     if(result)setNotice("You received "+result.boxesAwarded+" "+(result.boxesAwarded===1?"box":"boxes")+"!");
     setCheckingIn(false);
   }
+  function playRewardChime() {
+    if (!soundOn || !rewardAudio.current) return;
+    const ctx=rewardAudio.current;
+    const now=ctx.currentTime;
+    [659.25,783.99,987.77,1318.51].forEach((frequency,index)=>{
+      const oscillator=ctx.createOscillator();
+      const gain=ctx.createGain();
+      oscillator.type="sine"; oscillator.frequency.value=frequency;
+      gain.gain.setValueAtTime(0.0001,now+index*0.105);
+      gain.gain.exponentialRampToValueAtTime(0.12,now+index*0.105+0.025);
+      gain.gain.exponentialRampToValueAtTime(0.0001,now+index*0.105+0.34);
+      oscillator.connect(gain); gain.connect(ctx.destination);
+      oscillator.start(now+index*0.105); oscillator.stop(now+index*0.105+0.36);
+    });
+  }
   function finishReveal() {
     if (!pendingReward) return;
     setLastReward(pendingReward);
     setPendingReward("");
     setRevealing(false);
+    setRewardModalOpen(true);
+    playRewardChime();
   }
   useEffect(() => {
     if (!revealing || !pendingReward) return undefined;
@@ -183,7 +213,8 @@ export default function App() {
   }, [revealing, pendingReward]);
   async function openBox() {
     if(opening||revealing||!(user?.boxes>0))return;
-    setOpening(true);setLastReward("");setPendingReward("");
+    setOpening(true);setLastReward("");setPendingReward("");setRewardModalOpen(false);
+    try { const AudioCtx=window.AudioContext||window.webkitAudioContext; if(AudioCtx){ if(!rewardAudio.current) rewardAudio.current=new AudioCtx(); if(rewardAudio.current.state==="suspended") rewardAudio.current.resume(); } } catch {}
     try {
       // The API commits the box deduction, reward and ledger entry before any reveal begins.
       const result=await apiRequest("/api/boxes/open",{method:"POST",body:"{}"});
@@ -227,7 +258,7 @@ export default function App() {
     <main key={active} className="main-view">
       {active==="home"&&<HomePage user={user} stats={stats} onNavigate={setActive} checkedIn={checkedIn} checkinDay={checkinDay} onCheckIn={checkIn} checkingIn={checkingIn} onWithdraw={()=>setWithdrawOpen(true)}/>}
       {active==="tasks"&&<TasksPage tasks={tasks} onSubmit={submitTask} submitting={submitting} onWatchAd={watchAd} watchingAd={watchingAd} adStats={adStats}/>}
-      {active==="boxes"&&<BoxesPage user={user} activity={activity} activityStats={activityStats} onOpen={openBox} opening={opening} revealing={revealing} reward={lastReward} onRevealComplete={finishReveal}/>}
+      {active==="boxes"&&<BoxesPage user={user} onOpen={openBox} opening={opening} revealing={revealing} reward={lastReward} onRevealComplete={finishReveal} rewardModalOpen={rewardModalOpen} onDismissReward={()=>setRewardModalOpen(false)} soundOn={soundOn} onToggleSound={()=>setSoundOn(v=>!v)}/>}
       {active==="invite"&&<InvitePage user={user} stats={stats} referrals={referrals}/>}
       {active==="profile"&&<ProfilePage user={user} onWithdraw={()=>setWithdrawOpen(true)}/>}
     </main>
