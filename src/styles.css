@@ -120,6 +120,7 @@
 .task-box-reward svg{color:#e8c77d;fill:#e8c77d20;}
 .action-task-button{flex:0 0 57px;min-height:34px;padding:7px 8px;border-radius:9px;text-align:center;text-decoration:none;}
 .community-action-button[aria-disabled="true"]{opacity:.5;cursor:not-allowed;}
+.task-action-controls{display:flex;flex-direction:column;align-items:stretch;gap:6px;flex:none;min-width:104px}.task-action-controls .action-task-button{width:100%;min-width:104px}.task-action-controls .community-action-button{display:flex;align-items:center;justify-content:center;min-height:32px}
 .community-icon{background:#ffffff0b;border-color:#ffffff1b;color:#fff;}
 .facebook-icon{background:#1877f21c;border-color:#1877f255;color:#1877f2;}
 .telegram-icon{background:#26a5e41c;border-color:#26a5e455;color:#26a5e4;}
