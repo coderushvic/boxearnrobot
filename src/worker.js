@@ -70,7 +70,7 @@ async function authenticate(request, env) {
   }
 }
 async function getUser(db, telegramId) {
-  return db.prepare("SELECT telegram_id, username, first_name, last_name, photo_url, referral_code, balance_micro, boxes, checkin_cycle, last_checkin_date, created_at FROM users WHERE telegram_id = ?").bind(String(telegramId)).first();
+  return db.prepare("SELECT telegram_id, username, first_name, last_name, photo_url, referral_code, balance_micro, boxes, checkin_cycle, checkin_day, last_checkin_date, created_at FROM users WHERE telegram_id = ?").bind(String(telegramId)).first();
 }
 function presentUser(user) {
   if (!user) return null;
@@ -79,7 +79,7 @@ function presentUser(user) {
     photoUrl: user.photo_url, referralCode: user.referral_code,
     referralLink: `https://t.me/boxearnrobot?start=ref_${user.referral_code}`,
     balanceUsdt: (user.balance_micro / MICRO).toFixed(6), balanceMicro: user.balance_micro,
-    boxes: user.boxes, checkinCycle: user.checkin_cycle, lastCheckinDate: user.last_checkin_date
+    boxes: user.boxes, checkinCycle: user.checkin_cycle, checkinDay: user.checkin_day || 0, lastCheckinDate: user.last_checkin_date
   };
 }
 async function authUser(request, env) {
@@ -203,16 +203,17 @@ async function api(request, env) {
     const today = lagosDate();
     const current = await getUser(env.DB, uid);
     if (current.last_checkin_date === today) return fail("You have already checked in today.", 409, "already_checked_in");
-    const nextCycle = current.last_checkin_date === yesterday(today) ? (current.checkin_cycle + 1) % 3 : 0;
-    const reward = nextCycle + 1;
+    const previousDay = current.last_checkin_date === yesterday(today) ? (current.checkin_day || 0) : 0;
+    const nextDay = previousDay >= 7 ? 1 : previousDay + 1;
+    const reward = nextDay;
     const results = await env.DB.batch([
-      env.DB.prepare("UPDATE users SET boxes = boxes + ?, checkin_cycle = ?, last_checkin_date = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE telegram_id = ? AND (last_checkin_date IS NULL OR last_checkin_date <> ?)")
-        .bind(reward, nextCycle, today, uid, today),
+      env.DB.prepare("UPDATE users SET boxes = boxes + ?, checkin_day = ?, checkin_cycle = ?, last_checkin_date = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE telegram_id = ? AND (last_checkin_date IS NULL OR last_checkin_date <> ?)")
+        .bind(reward, nextDay, (nextDay - 1) % 3, today, uid, today),
       env.DB.prepare("INSERT INTO ledger (id, telegram_id, event_type, boxes_delta, reference, metadata) SELECT ?, ?, 'daily_checkin', ?, ?, ? WHERE changes() = 1")
-        .bind(crypto.randomUUID(), uid, reward, `checkin:${uid}:${today}`, JSON.stringify({ day: reward, date: today }))
+        .bind(crypto.randomUUID(), uid, reward, `checkin:${uid}:${today}`, JSON.stringify({ day: nextDay, date: today, rewardBoxes: reward, cycleLength: 7 }))
     ]);
     if (!results[0]?.meta?.changes) return fail("You have already checked in today.", 409, "already_checked_in");
-    return json({ ok: true, boxesAwarded: reward, user: presentUser(await getUser(env.DB, uid)) });
+    return json({ ok: true, checkinDay: nextDay, boxesAwarded: reward, user: presentUser(await getUser(env.DB, uid)) });
   }
   if (path === "/api/boxes/open" && request.method === "POST") {
     const reward = 50_000 + crypto.getRandomValues(new Uint32Array(1))[0] % 40_001;
