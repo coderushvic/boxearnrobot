@@ -62,3 +62,7 @@
  .original-box-artwork.revealing .box-art-glow,
  .original-box-artwork.revealing:after{animation-duration:1ms;animation-iteration-count:1}
 }
+
+/* Keep the original wordmark crisp and aligned in the compact Telegram header */
+.brand{gap:0;min-width:0;display:flex;align-items:center}
+.brand img{display:block;width:132px;height:49px;object-fit:contain;object-position:left center}
