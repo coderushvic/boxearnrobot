@@ -95,7 +95,7 @@ function TasksPage({ tasks, hiddenTaskIds = [], onSubmit, submitting, onWatchAd,
       <article className="action-task ad-action-task">
         <span className="action-task-icon"><PlayCircle size={19}/></span>
         <div className="action-task-copy"><div className="action-task-title"><b>Watch ads</b></div><p>Watch a short ad and earn a mystery box.</p>{adCooldown>0 && <small className="ad-cooldown-label">Next ad available in {Math.floor(adCooldown/60)}:{String(adCooldown%60).padStart(2,"0")}</small>}<span className="task-box-reward"><Gift size={14}/> 1 box per ad</span></div>
-        <button className="action-task-button withdraw-button task-cta" disabled={!hasMonetagZone || watchingAd || adCooldown>0} onClick={onWatchAd}>{watchingAd?"Loading…":adCooldown>0?"Wait":"Watch Ads"}</button>
+        <button className="action-task-button withdraw-button task-cta" disabled={watchingAd} onClick={onWatchAd}>{watchingAd?"Loading…":adCooldown>0?"Wait":"Watch Ads"}</button>
       </article>
       {communityItems.map(({label,detail,Icon,platform,task})=>task&&<article className={"action-task community-action community-"+platform} key={task.id}>
         <span className={"action-task-icon community-icon "+platform+"-icon"}><Icon size={19}/></span>
