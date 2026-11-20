@@ -100,7 +100,7 @@ async function monetagPostback(request, env) {
   if (eventType !== "impression" || rewardType !== "valued") return json({ ok: true, ignored: true });
   const ymid = params.get("ymid") || "";
   const telegramId = params.get("telegram_id") || "";
-  const match = ymid.match(/^be_(\\d+)_([a-f0-9]{16,64})$/);
+  const match = ymid.match(/^be_(\d+)_([a-f0-9]{16,64})$/);
   if (!match || !telegramId || match[1] !== telegramId) return fail("Invalid Monetag event identifiers.", 400, "invalid_event");
   const results = await env.DB.batch([
     env.DB.prepare(`INSERT OR IGNORE INTO ad_events (event_id, telegram_id, provider, verified_views)
