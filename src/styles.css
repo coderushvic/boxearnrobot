@@ -87,3 +87,60 @@
  .ad-action-task .reward-tag{align-self:flex-start;}
  .action-task-button{flex-basis:49px;}
 }
+
+
+/* Home mystery gift: place the available box count directly on the artwork */
+.mystery-card{min-height:190px;align-items:center;padding:10px 4px;}
+.mystery-copy{width:55%;padding:5px 0;}
+.mystery-copy h3{margin:9px 0 6px;font-size:21px;line-height:1.12;}
+.mystery-copy p{max-width:145px;margin-bottom:10px;}
+.mystery-card .box-stage{right:-3px;width:48%;height:174px;top:8px;}
+.home-box-count{position:absolute;z-index:8;left:73%;top:61%;transform:translate(-50%,-50%);min-width:42px;height:28px;padding:0 8px;display:flex;align-items:center;justify-content:center;gap:5px;border:1px solid #f3d89b;border-radius:8px;background:linear-gradient(135deg,#d7a64d,#8b5b1e);color:#171006;font:800 12px Manrope;box-shadow:0 3px 12px #0009,inset 0 1px #fff8;pointer-events:none;}
+.home-box-count svg{width:12px;height:12px;}
+/* Compact daily check-in without sacrificing the seven-day reward preview */
+.checkin-card{padding:13px 13px 11px;margin-bottom:17px;border-radius:16px;}
+.checkin-head{gap:8px;}
+.checkin-icon{width:31px;height:31px;border-radius:10px;}
+.checkin-head h3{font-size:14px;margin-top:2px;}
+.checkin-days{gap:4px;margin:11px 0 10px;}
+.day-reward{min-height:54px;padding:6px 1px 5px;gap:2px;border-radius:8px;}
+.day-reward span,.day-reward small{font-size:5.5px;}
+.day-reward strong{font-size:15px;}
+.checkin-card .primary-button{min-height:40px;padding:9px 12px;font-size:11px;}
+.checkin-card .fine-print{margin-top:6px;font-size:8px;line-height:1.3;}
+/* Individual task tiles: distinct spacing, consistent alignment and readable reward */
+.action-task-list{display:grid;gap:10px;overflow:visible;border:0;border-radius:0;background:transparent;}
+.action-task{position:relative;min-height:91px;padding:13px 12px;border:1px solid #ffffff16;border-radius:15px;background:linear-gradient(145deg,#151e27,#10161e);box-shadow:0 7px 18px #0002;}
+.action-task:last-child{border-bottom:1px solid #ffffff16;}
+.action-task-copy{display:flex;flex-direction:column;align-items:flex-start;gap:5px;}
+.action-task-title{width:100%;align-items:center;justify-content:flex-start;gap:6px;}
+.action-task-title b{font-size:11px;line-height:1.35;}
+.action-task-copy p{margin:0;font-size:9px;line-height:1.45;}
+.task-box-reward{display:inline-flex;align-items:center;gap:5px;margin-top:2px;color:#e8cc8f;font-size:8px;font-weight:800;white-space:nowrap;}
+.task-box-reward svg{color:#e8c77d;fill:#e8c77d20;}
+.action-task-button{flex:0 0 57px;min-height:34px;padding:7px 8px;border-radius:9px;text-align:center;text-decoration:none;}
+.community-action-button[aria-disabled="true"]{opacity:.5;cursor:not-allowed;}
+.community-icon{background:#ffffff0b;border-color:#ffffff1b;color:#fff;}
+.facebook-icon{background:#1877f21c;border-color:#1877f255;color:#1877f2;}
+.telegram-icon{background:#26a5e41c;border-color:#26a5e455;color:#26a5e4;}
+.youtube-icon{background:#ff00331a;border-color:#ff003355;color:#ff334f;}
+.instagram-icon{background:linear-gradient(135deg,#833ab41c,#fd1d1d1c,#fcb0451c);border-color:#e66a8a66;color:#f4779a;}
+.community-facebook .action-task-button{border-color:#1877f266;color:#6eafff;background:#1877f21a;}
+.community-telegram .action-task-button{border-color:#26a5e466;color:#6cc9f3;background:#26a5e41a;}
+.community-youtube .action-task-button{border-color:#ff334f66;color:#ff7888;background:#ff00331a;}
+.community-instagram .action-task-button{border-color:#e66a8a66;color:#f18aaa;background:linear-gradient(110deg,#833ab422,#fd1d1d22,#fcb04522);}
+.tasks-page .section-title{margin-top:20px;}
+.tasks-page .task-list{display:grid;gap:10px;}
+.tasks-page .task-card{border:1px solid #ffffff16;border-radius:15px;background:linear-gradient(145deg,#151e27,#10161e);box-shadow:0 7px 18px #0002;}
+@media(max-width:390px){
+ .mystery-card{min-height:176px;}
+ .mystery-copy{width:57%;}
+ .mystery-card .box-stage{right:-8px;width:49%;}
+ .home-box-count{left:73%;top:61%;min-width:38px;height:25px;font-size:11px;}
+ .checkin-card{padding:11px 9px 9px;}
+ .day-reward{min-height:49px;}
+ .action-task{gap:8px;padding:11px 9px;min-height:88px;}
+ .action-task-icon{width:34px;height:34px;}
+ .action-task-copy p{font-size:8px;}
+ .action-task-button{flex-basis:48px;min-height:32px;font-size:8px;}
+}
