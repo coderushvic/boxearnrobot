@@ -10,3 +10,28 @@
 .withdraw-modal .primary-button{margin-top:12px}
 .primary-button:disabled,.outline-button:disabled{opacity:.48;cursor:not-allowed}
 .app-shell{padding-bottom:env(safe-area-inset-bottom)}
+
+/* Seven-day check-in reward track and expanded box activity */
+.checkin-days{grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;overflow:visible}
+.day-reward{min-width:0;padding:9px 2px 8px;border-radius:9px}
+.day-reward span{font-size:7px;letter-spacing:0}
+.day-reward strong{font-size:19px}
+.day-reward small{font-size:7px;letter-spacing:0}
+.day-reward.completed{border-color:#36d99435;background:#22a7690c;color:#9bc9ad}
+.day-reward.completed strong{color:#83dca9}
+.day-reward i{right:2px;top:2px;width:12px;height:12px}
+.box-stats-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:14px 0 24px}
+.box-stat{min-width:0;padding:13px 8px;border:1px solid var(--line);border-radius:12px;background:#0e1812;text-align:center}
+.box-stat span{display:block;color:#819789;font-size:7px;letter-spacing:.65px;font-weight:700}
+.box-stat b{display:block;font:800 21px Manrope;margin:5px 0 1px;color:#e5f1e9}
+.box-stat small{display:block;color:#7f9587;font-size:8px}
+.box-activity-list{display:grid;gap:8px;margin-bottom:18px}
+.box-activity-item{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid var(--line);border-radius:12px;background:#0e1812}
+.box-activity-icon{width:34px;height:34px;flex:none;border-radius:10px;display:grid;place-items:center;background:#28c17c1f;color:#65dfa1}
+.box-activity-icon.opened{background:#c8a65b18;color:#dfc17c}
+.box-activity-item>div{flex:1;min-width:0}
+.box-activity-item b{display:block;font-size:10px;text-transform:capitalize;color:#d3e1d7}
+.box-activity-item small{display:block;font-size:8px;color:#819589;margin-top:3px}
+.box-activity-item>strong{white-space:nowrap;font-size:10px;color:#82e2ad}
+.box-activity-item>strong.negative{color:#d7bd80}
+@media(max-width:360px){.day-reward span{font-size:6px}.day-reward strong{font-size:17px}.day-reward small{font-size:6px}.checkin-days{gap:3px}}
