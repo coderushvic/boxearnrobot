@@ -82,12 +82,13 @@ function TasksPage({ tasks, onSubmit, submitting, onWatchAd, watchingAd, adCoold
     { label: "Follow us on Instagram", detail: "See BOX EARN news and community highlights.", Icon: Instagram, platform:"instagram", href:import.meta.env.VITE_INSTAGRAM_URL }
   ].map(item => ({
     ...item,
-    task: tasks.find(task => task.id === item.platform || task.id === item.platform + "_follow" || task.task_type === item.platform)
+    task: tasks.find(task => String(task.id).toLowerCase().includes(item.platform) || String(task.task_type).toLowerCase() === item.platform)
   }));
+  const generalTasks = tasks.filter(task => !communityItems.some(item => item.task?.id === task.id));
   return <div className="page-content subpage tasks-page">
     <div className="page-intro"><span className="eyebrow">YOUR EARNING HUB</span><h1>Tasks<span className="green-dot">.</span></h1><p className="muted">Small actions. More chances to earn.</p></div>
     <SectionTitle eyebrow="EARN BOXES" title="Available tasks"/>
-    {tasks.length ? <div className="task-list">{tasks.map(t=><article className="task-card" key={t.id}><div className="task-card-top"><span className="task-icon"><Target size={19}/></span><span className="task-tag">VERIFIED TASK</span></div><h3>{t.title}</h3><p>{t.description}</p><div className="task-card-bottom"><span className="reward-chip"><Gift size={13}/>{t.reward_boxes} boxes</span><button className="outline-button" disabled={submitting===t.id} onClick={()=>onSubmit(t.id)}>{submitting===t.id?"Submitting…":"Submit task"}</button></div></article>)}</div> : <div className="empty-state"><Target size={22}/><b>New tasks are being prepared</b><span>Verified tasks will appear here when their rules and reward settings are configured.</span></div>}
+    {generalTasks.length ? <div className="task-list">{generalTasks.map(t=><article className="task-card" key={t.id}><div className="task-card-top"><span className="task-icon"><Target size={19}/></span><span className="task-tag">VERIFIED TASK</span></div><h3>{t.title}</h3><p>{t.description}</p><div className="task-card-bottom"><span className="reward-chip"><Gift size={13}/>{t.reward_boxes} boxes</span><button className="outline-button" disabled={submitting===t.id} onClick={()=>onSubmit(t.id)}>{submitting===t.id?"Submitting…":"Submit task"}</button></div></article>)}</div> : <div className="empty-state"><Target size={22}/><b>New tasks are being prepared</b><span>Verified tasks will appear here when their rules and reward settings are configured.</span></div>}
     <SectionTitle eyebrow="QUICK WAYS TO EARN" title="More ways to earn"/>
     <div className="action-task-list">
       <article className="action-task ad-action-task">
