@@ -26,7 +26,7 @@ function BoxArtwork({ revealing = false, onRevealComplete, inactive = false, box
     <span className="custom-gift-shadow" aria-hidden="true" />
     <div className="custom-gift" aria-hidden="true">
       <span className="custom-gift-side" />
-      <span className="custom-gift-body"><i className="custom-gift-ribbon" /><i className="custom-gift-emblem"><Gift size={23}/></i>{boxCount > 0 && <span className="home-box-count" aria-label={boxCount + " boxes available"}>{boxCount}</span>}</span>
+      <span className="custom-gift-body"><i className="custom-gift-ribbon" /><i className="custom-gift-emblem"><Gift size={23}/></i>{boxCount !== undefined && <span className="home-box-count" aria-label={boxCount + " boxes available"}>{boxCount}</span>}</span>
       <span className="custom-gift-lid"><i className="custom-lid-ribbon" /></span>
       <span className="custom-bow"><i /><i /><b /></span>
       <span className="custom-gift-spark custom-spark-a">✦</span><span className="custom-gift-spark custom-spark-b">✧</span>
