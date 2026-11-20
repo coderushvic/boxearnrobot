@@ -20,7 +20,7 @@ const navItems = [
 function Brand() {
   return <div className="brand" aria-label="BOX EARN"><img src="/assets/boxearn/boxearn-logo.webp" alt="BOX EARN" /></div>;
 }
-function BoxArtwork({ revealing = false, onRevealComplete, inactive = false }) {
+function BoxArtwork({ revealing = false, onRevealComplete, inactive = false, boxCount }) {
   return <div className={"box-stage original-box-artwork custom-gift-art" + (revealing ? " revealing" : "") + (inactive ? " inactive" : "")} role="img" aria-label={revealing ? "BOX EARN mystery gift opening" : "Original BOX EARN emerald and gold mystery gift"} onAnimationEnd={revealing ? onRevealComplete : undefined}>
     <span className="box-art-glow" aria-hidden="true" />
     <span className="custom-gift-shadow" aria-hidden="true" />
@@ -49,10 +49,10 @@ function HomePage({ user, stats, checkedIn, checkinDay, onNavigate, onCheckIn, c
     <section className="checkin-card"><div className="checkin-head"><div className="checkin-icon"><CalendarCheck2 size={18}/></div><div><span className="eyebrow">DAILY REWARD</span><h3>Daily check-in</h3></div><span className="streak-pill">DAY {nextDay} OF 7</span></div>
       <div className="checkin-days">{[1,2,3,4,5,6,7].map((day,i)=><div className={"day-reward " + (i===nextDay-1?"today ":"") + (checkedIn && day===nextDay?"claimed":"") + (day<nextDay || (checkedIn && day===nextDay)?" completed":"")} key={day}><span>DAY {day}</span><strong>{day}</strong><small>{day===1?"BOX":"BOXES"}</small>{(day<nextDay || (checkedIn && day===nextDay)) && <i><Check size={11}/></i>}</div>)}</div>
       <button className={"primary-button checkin-button " + (checkedIn?"button-done":"")} onClick={onCheckIn} disabled={checkedIn || checkingIn}>{checkedIn?<><CheckCircle2 size={17}/> Checked in today</>:checkingIn?"Claiming reward…":<>Claim today's box <ArrowRight size={16}/></>}</button>
-      <p className="fine-print">Check in for 7 days in a row to earn 1 to 7 boxes. Miss a day and your streak restarts.</p>
+      <p className="fine-print">Build your streak to earn up to 7 boxes.</p>
     </section>
     <section className="mystery-section"><SectionTitle eyebrow="A LITTLE MYSTERY. A REAL REWARD." title="Your mystery boxes" action="View all" onAction={() => onNavigate("boxes")}/>
-      <div className="mystery-card"><div className="mystery-copy"><span className="limited-tag"><Sparkles size={12}/> THE BOX EXPERIENCE</span><h3>Something good<br/>is inside.</h3><p>Open a box and discover your USDT reward.</p><button className="dark-button" onClick={() => onNavigate("boxes")}>Explore boxes <ArrowUpRight size={15}/></button></div><BoxArtwork/><div className="mystery-count"><Ticket size={13}/> <b>{user?.boxes ?? 0}</b> BOXES READY</div></div>
+      <div className="mystery-card"><div className="mystery-copy"><span className="limited-tag"><Sparkles size={12}/> THE BOX EXPERIENCE</span><h3>Something good<br/>is inside.</h3><p>Open a box and discover your USDT reward.</p><button className="dark-button" onClick={() => onNavigate("boxes")}>Explore boxes <ArrowUpRight size={15}/></button></div><BoxArtwork boxCount={user?.boxes ?? 0}/></div>
     </section>
     <section className="earn-section"><SectionTitle eyebrow="KEEP YOUR MOMENTUM" title="Ways to earn" action="All tasks" onAction={() => onNavigate("tasks")}/>
       <div className="earn-row" onClick={() => onNavigate("tasks")} role="button" tabIndex={0}><span className="earn-icon"><Target size={19}/></span><div><b>Complete tasks</b><small>Approved activities earn boxes.</small></div><ArrowRight size={17}/></div>
@@ -65,10 +65,10 @@ function HomePage({ user, stats, checkedIn, checkinDay, onNavigate, onCheckIn, c
 
 function TasksPage({ tasks, onSubmit, submitting, onWatchAd, watchingAd, adStats, adCooldown }) {
   const communityItems = [
-    { label: "Follow us on Facebook", detail: "Get updates, announcements and community news.", Icon: Facebook },
-    { label: "Join our Telegram", detail: "Stay close to BOX EARN announcements and updates.", Icon: Send },
-    { label: "Subscribe on YouTube", detail: "Watch product updates and helpful walkthroughs.", Icon: Youtube },
-    { label: "Follow us on Instagram", detail: "See BOX EARN news and community highlights.", Icon: Instagram }
+    { label: "Follow us on Facebook", detail: "Get updates, announcements and community news.", Icon: Facebook, platform:"facebook", href:import.meta.env.VITE_FACEBOOK_URL },
+    { label: "Join our Telegram", detail: "Stay close to BOX EARN announcements and updates.", Icon: Send, platform:"telegram", href:import.meta.env.VITE_TELEGRAM_CHANNEL_URL },
+    { label: "Subscribe on YouTube", detail: "Watch product updates and helpful walkthroughs.", Icon: Youtube, platform:"youtube", href:import.meta.env.VITE_YOUTUBE_URL },
+    { label: "Follow us on Instagram", detail: "See BOX EARN news and community highlights.", Icon: Instagram, platform:"instagram", href:import.meta.env.VITE_INSTAGRAM_URL }
   ];
   return <div className="page-content subpage tasks-page">
     <div className="page-intro"><span className="eyebrow">YOUR EARNING HUB</span><h1>Tasks<span className="green-dot">.</span></h1><p className="muted">Small actions. More chances to earn.</p></div>
@@ -78,11 +78,13 @@ function TasksPage({ tasks, onSubmit, submitting, onWatchAd, watchingAd, adStats
     <div className="action-task-list">
       <article className="action-task ad-action-task">
         <span className="action-task-icon"><PlayCircle size={19}/></span>
-        <div className="action-task-copy"><div className="action-task-title"><b>Watch ads</b><span className="action-tag reward-tag">+1 BOX PER AD</span></div><p>Watch a short ad and earn a mystery box.</p>{adCooldown>0 && <small className="ad-cooldown-label">Next ad available in {Math.floor(adCooldown/60)}:{String(adCooldown%60).padStart(2,"0")}</small>}</div>
+        <div className="action-task-copy"><div className="action-task-title"><b>Watch ads</b></div><p>Watch a short ad and earn a mystery box.</p>{adCooldown>0 && <small className="ad-cooldown-label">Next ad available in {Math.floor(adCooldown/60)}:{String(adCooldown%60).padStart(2,"0")}</small>}<span className="task-box-reward"><Gift size={14}/> 1 box per ad</span></div>
         <button className="action-task-button" disabled={!hasMonetagZone || watchingAd || adCooldown>0} onClick={onWatchAd}>{watchingAd?"…":adCooldown>0?"Wait":"Watch"}</button>
       </article>
-      {communityItems.map(({label,detail,Icon})=><article className="action-task community-action" key={label}>
-        <span className="action-task-icon community-icon"><Icon size={18}/></span><div className="action-task-copy"><div className="action-task-title"><b>{label}</b><span className="action-tag coming-tag">COMING SOON</span></div><p>{detail}</p></div><span className="action-lock"><LockKeyhole size={14}/></span>
+      {communityItems.map(({label,detail,Icon,platform,href})=><article className={"action-task community-action community-"+platform} key={label}>
+        <span className={"action-task-icon community-icon "+platform+"-icon"}><Icon size={19}/></span>
+        <div className="action-task-copy"><div className="action-task-title"><b>{label}</b></div><p>{detail}</p><span className="task-box-reward"><Gift size={14}/> Reward shown after task setup</span></div>
+        <a className="action-task-button community-action-button" href={href || undefined} target={href ? "_blank" : undefined} rel={href ? "noopener noreferrer" : undefined} aria-disabled={!href} onClick={e=>{if(!href)e.preventDefault();}}>{href?"Open":"Follow"}</a>
       </article>)}
     </div>
     <div className="notice-card"><ShieldCheck size={18}/><p>Complete activities to collect more mystery boxes. Rewards are added after each activity is confirmed.</p></div>
