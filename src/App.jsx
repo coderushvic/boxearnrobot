@@ -181,7 +181,9 @@ export default function App() {
   const [lastReward,setLastReward]=useState("");
   const [revealing,setRevealing]=useState(false);
   const [pendingReward,setPendingReward]=useState("");
-  const [rewardModalOpen,setRewardModalOpen]=useState(false);\n  const [claimSuccessOpen,setClaimSuccessOpen]=useState(false);\n  const [boxCountOverride,setBoxCountOverride]=useState(null);
+  const [rewardModalOpen,setRewardModalOpen]=useState(false);
+  const [claimSuccessOpen,setClaimSuccessOpen]=useState(false);
+  const [boxCountOverride,setBoxCountOverride]=useState(null);
   const [soundOn,setSoundOn]=useState(true);
   const rewardAudio=useRef(null);
   const [withdrawOpen,setWithdrawOpen]=useState(false);
@@ -346,7 +348,7 @@ export default function App() {
     <main key={active} className="main-view">
       {active==="home"&&<HomePage user={user} stats={stats} activity={activity} onNavigate={setActive} checkedIn={checkedIn} checkinDay={checkinDay} onCheckIn={checkIn} checkingIn={checkingIn} onWithdraw={()=>setWithdrawOpen(true)}/>}
       {active==="tasks"&&<TasksPage tasks={tasks} hiddenTaskIds={hiddenTaskIds} onSubmit={submitTask} submitting={submitting} onWatchAd={watchAd} watchingAd={watchingAd} adCooldown={adCooldown}/>}
-      {active==="boxes"&&<BoxesPage user={user} boxCountOverride={boxCountOverride} onOpen={openBox} opening={opening} revealing={revealing} reward={lastReward} onRevealComplete={finishReveal} rewardModalOpen={rewardModalOpen} onClaimReward={()=>{setRewardModalOpen(false);setBoxCountOverride(null);setClaimSuccessOpen(true);}} claimSuccessOpen={claimSuccessOpen} onDismissReward={()=>setClaimSuccessOpen(false)} soundOn={soundOn} onToggleSound={()=>setSoundOn(v=>!v)}/>}
+      {active==="boxes"&&<BoxesPage user={user} boxCountOverride={boxCountOverride} onOpen={openBox} opening={opening} revealing={revealing} reward={lastReward} onRevealComplete={finishReveal} rewardModalOpen={rewardModalOpen} onClaimReward={()=>{setRewardModalOpen(false);setClaimSuccessOpen(true);}} claimSuccessOpen={claimSuccessOpen} onDismissReward={()=>{setClaimSuccessOpen(false);setBoxCountOverride(null);}} soundOn={soundOn} onToggleSound={()=>setSoundOn(v=>!v)}/>}
       {active==="invite"&&<InvitePage user={user} stats={stats} referrals={referrals}/>}
       {active==="profile"&&<ProfilePage user={user} onWithdraw={()=>setWithdrawOpen(true)}/>}
     </main>
