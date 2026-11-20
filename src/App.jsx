@@ -119,7 +119,7 @@ function BoxesPage({ user, boxCountOverride, onOpen, opening, revealing, reward,
       <div className="box-counter"><span className="counter-label">YOUR GIFTS</span><strong>{count.toString()}</strong><span className="counter-caption">{count===1?"BOX WAITING FOR YOU":"BOXES WAITING FOR YOU"}</span></div>
       <button className="sound-toggle" type="button" onClick={onToggleSound} aria-label={soundOn?"Mute reward sound":"Enable reward sound"}><span>{soundOn?"SOUND ON":"SOUND OFF"}</span><i>{soundOn?"♪":"×"}</i></button>
       <div className="premium-box-stage">
-        <BoxArtwork revealing={revealing} onRevealComplete={onRevealComplete} inactive={!count && !revealing}/>
+        <BoxArtwork revealing={revealing} onRevealComplete={onRevealComplete} inactive={!count && !revealing} boxCount={count}/>
       </div>
       <div className="box-invitation">{count>0 ? <><h2>Your present is waiting.</h2><p>Take a breath. Make a wish. See what's inside.</p></> : <><h2>Your gift shelf is resting.</h2><p>Earn more boxes and come back for your next surprise.</p></>}</div>
       <button className={"primary-button premium-open-button" + (!count?" is-disabled":"")} onClick={onOpen} disabled={busy || count===0}>{opening?"Preparing your gift…":revealing?"Unwrapping your surprise…":count>0?"Unwrap your gift":"No boxes available"}{count>0&&!busy&&<Sparkles size={16}/>}</button>
