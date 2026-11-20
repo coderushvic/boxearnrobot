@@ -109,16 +109,13 @@ async function monetagPostback(request, env) {
       )`).bind(ymid, telegramId, ymid, telegramId),
     env.DB.prepare(`UPDATE users SET
       verified_ad_views = verified_ad_views + 1,
-      boxes = boxes + CASE WHEN ((verified_ad_views + 1) / 200) > ad_boxes_awarded
-        THEN (((verified_ad_views + 1) / 200) - ad_boxes_awarded) * 50 ELSE 0 END,
-      ad_boxes_awarded = CASE WHEN ((verified_ad_views + 1) / 200) > ad_boxes_awarded
-        THEN ((verified_ad_views + 1) / 200) ELSE ad_boxes_awarded END,
+      boxes = boxes + 1,
       updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
       WHERE telegram_id = ? AND changes() = 1`).bind(telegramId),
     env.DB.prepare(`INSERT OR IGNORE INTO ledger (id, telegram_id, event_type, boxes_delta, reference, metadata)
-      SELECT ?, telegram_id, 'monetag_ads_reward', 50, 'monetag:' || telegram_id || ':' || verified_ad_views, ?
-      FROM users WHERE telegram_id = ? AND verified_ad_views > 0 AND verified_ad_views % 200 = 0 AND changes() = 1`)
-      .bind(crypto.randomUUID(), JSON.stringify({ provider: "monetag", rewardRule: "200_verified_views_for_50_boxes" }), telegramId)
+      SELECT ?, telegram_id, 'monetag_ads_reward', 1, 'monetag:' || ?, ?
+      FROM users WHERE telegram_id = ? AND changes() = 1`)
+      .bind(crypto.randomUUID(), ymid, JSON.stringify({ provider: "rewarded_ad", rewardRule: "one_verified_ad_one_box" }), telegramId)
   ]);
   if (!results[0]?.meta?.changes) {
     const session = await env.DB.prepare("SELECT ymid FROM ad_sessions WHERE ymid = ? AND telegram_id = ?").bind(ymid, telegramId).first();
@@ -168,14 +165,30 @@ async function api(request, env) {
 
   if (path === "/api/ads/session" && request.method === "POST") {
     const ymid = "be_" + uid + "_" + randomHex(16);
-    await env.DB.prepare("INSERT INTO ad_sessions (ymid, telegram_id, expires_at) VALUES (?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','+48 hours'))")
-      .bind(ymid, uid).run();
+    const created = await env.DB.prepare(`INSERT INTO ad_sessions (ymid, telegram_id, expires_at)
+      SELECT ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','+48 hours')
+      WHERE NOT EXISTS (
+        SELECT 1 FROM ad_sessions
+        WHERE telegram_id = ?
+          AND created_at > strftime('%Y-%m-%dT%H:%M:%fZ','now','-2 minutes')
+      )`).bind(ymid, uid, uid).run();
+    if (!created.meta?.changes) {
+      const cooldown = await env.DB.prepare(`SELECT MAX(0, CAST((julianday(MAX(created_at)) + (2.0 / 1440) - julianday('now')) * 86400 AS INTEGER)) AS remaining
+        FROM ad_sessions WHERE telegram_id = ?`).bind(uid).first();
+      return json({ ok: false, error: { code: "ad_cooldown", message: "Please wait before watching another ad." }, retryAfterSeconds: Math.max(1, cooldown?.remaining || 1) }, 429);
+    }
     return json({ ok: true, ymid });
   }
   if (path === "/api/ads/stats" && request.method === "GET") {
-    const stats = await env.DB.prepare("SELECT verified_ad_views, ad_boxes_awarded FROM users WHERE telegram_id = ?").bind(uid).first();
+    const [stats, lastSession] = await Promise.all([
+      env.DB.prepare("SELECT verified_ad_views FROM users WHERE telegram_id = ?").bind(uid).first(),
+      env.DB.prepare("SELECT MAX(created_at) AS created_at FROM ad_sessions WHERE telegram_id = ?").bind(uid).first()
+    ]);
     const views = stats?.verified_ad_views || 0;
-    return json({ ok: true, stats: { verifiedViews: views, boxesEarned: (stats?.ad_boxes_awarded || 0) * 50, progressToNextReward: views % 200, viewsForNextReward: 200 - (views % 200) } });
+    const remaining = lastSession?.created_at
+      ? Math.max(0, Math.ceil((Date.parse(lastSession.created_at) + 120000 - Date.now()) / 1000))
+      : 0;
+    return json({ ok: true, stats: { verifiedViews: views, boxesEarned: views, cooldownRemainingSeconds: remaining } });
   }
   if (path === "/api/me" && request.method === "GET") {
     const fresh = await getUser(env.DB, uid);
