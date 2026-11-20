@@ -232,8 +232,11 @@ async function api(request, env) {
     return json({ ok: true, referrals: rows.results || [], stats: { total: stats?.total || 0, qualified: stats?.qualified || 0, boxesEarned: stats?.qualified || 0 } });
   }
   if (path === "/api/activity" && request.method === "GET") {
-    const rows = await env.DB.prepare("SELECT event_type, amount_micro, boxes_delta, metadata, created_at FROM ledger WHERE telegram_id = ? ORDER BY created_at DESC LIMIT 50").bind(uid).all();
-    return json({ ok: true, activity: rows.results || [] });
+    const [rows, totals] = await Promise.all([
+      env.DB.prepare("SELECT event_type, amount_micro, boxes_delta, reference, metadata, created_at FROM ledger WHERE telegram_id = ? ORDER BY created_at DESC LIMIT 50").bind(uid).all(),
+      env.DB.prepare("SELECT COALESCE(SUM(CASE WHEN boxes_delta > 0 THEN boxes_delta ELSE 0 END), 0) AS boxes_earned, COUNT(CASE WHEN event_type = 'box_opened' THEN 1 END) AS boxes_opened FROM ledger WHERE telegram_id = ?").bind(uid).first()
+    ]);
+    return json({ ok: true, activity: rows.results || [], stats: { boxesEarned: totals?.boxes_earned || 0, boxesOpened: totals?.boxes_opened || 0 } });
   }
   if (path === "/api/withdrawals" && request.method === "POST") {
     const body = await readJson(request);
