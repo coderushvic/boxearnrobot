@@ -6,6 +6,7 @@ import {
   Target, Ticket, UserRound, Users, Wallet, X
 } from "lucide-react";
 import { apiRequest, authenticate } from "./api.js";
+import confetti from "canvas-confetti";
 import { hasMonetagZone, playRewardedAd } from "./monetag.js";
 
 const navItems = [
@@ -64,7 +65,7 @@ function HomePage({ user, stats, checkedIn, checkinDay, onNavigate, onCheckIn, c
 
 function TasksPage({ tasks, onSubmit, submitting, onWatchAd, watchingAd, adStats }) {
   return <div className="page-content subpage"><div className="page-intro"><span className="eyebrow">YOUR EARNING HUB</span><h1>Tasks<span className="green-dot">.</span></h1><p className="muted">Complete verified activities and collect more mystery boxes.</p></div>
-    <div className="task-summary"><div><small>TASKS AVAILABLE</small><b>{String(tasks.length).padStart(2,"0")}</b></div><div><small>REWARD SYSTEM</small><b>LIVE</b></div><div><small>VERIFICATION</small><b>ADMIN</b></div></div>
+    <div className="task-summary"><div><small>TASKS AVAILABLE</small><b>{String(tasks.length).padStart(2,"0")}</b></div><div><small>REWARD SYSTEM</small><b>LIVE</b></div><div><small>REWARD STATUS</small><b>SECURE</b></div></div>
     <SectionTitle eyebrow="EARN BOXES" title="Available tasks"/>
     {tasks.length ? <div className="task-list">{tasks.map(t=><article className="task-card" key={t.id}><div className="task-card-top"><span className="task-icon"><Target size={19}/></span><span className="task-tag">VERIFIED TASK</span></div><h3>{t.title}</h3><p>{t.description}</p><div className="task-card-bottom"><span className="reward-chip"><Gift size={13}/>{t.reward_boxes} boxes</span><button className="outline-button" disabled={submitting===t.id} onClick={()=>onSubmit(t.id)}>{submitting===t.id?"Submitting…":"Submit task"}</button></div></article>)}</div> : <div className="empty-state"><Target size={22}/><b>New tasks are being prepared</b><span>Verified tasks will appear here when their rules and reward settings are configured.</span></div>}
     <div className="notice-card"><ShieldCheck size={18}/><p>Task rewards are credited only after server-side approval. Repeated submissions cannot generate extra boxes.</p></div>
@@ -89,7 +90,6 @@ function BoxesPage({ user, onOpen, opening, revealing, reward, onRevealComplete,
       <span className="box-footnote">{count>0?"Each box reveals a real USDT reward.":"Your next surprise is only a few tasks away."}</span>
     </section>
     {rewardModalOpen && <div className="reward-backdrop" role="dialog" aria-modal="true" aria-label="Your mystery box reward">
-      <div className="reward-confetti" aria-hidden="true">{Array.from({length:34},(_,i)=><i key={i} style={{"--i":i}} />)}</div>
       <div className="reward-popup">
         <div className="reward-popup-glow"></div><span className="reward-kicker"><Sparkles size={13}/> A LITTLE SOMETHING FOR YOU</span>
         <div className="reward-gift-mark"><Gift size={30}/></div><h2>You found a reward!</h2><p>Your mystery gift contained</p>
@@ -211,6 +211,19 @@ export default function App() {
     playRewardChime();
   }
   useEffect(() => {
+    if (!rewardModalOpen) return undefined;
+    const colors = ["#12b875", "#e6bd68", "#f4e7c5", "#68dce4", "#a88be8"];
+    const end = Date.now() + 1900;
+    const frame = () => {
+      confetti({ particleCount: 5, angle: 60, spread: 62, startVelocity: 48, gravity: 0.92, ticks: 190, origin: { x: 0, y: 0.62 }, colors, scalar: 0.95 });
+      confetti({ particleCount: 5, angle: 120, spread: 62, startVelocity: 48, gravity: 0.92, ticks: 190, origin: { x: 1, y: 0.62 }, colors, scalar: 0.95 });
+      if (Date.now() < end) requestAnimationFrame(frame);
+    };
+    frame();
+    confetti({ particleCount: 90, spread: 105, startVelocity: 42, gravity: 0.9, ticks: 220, origin: { y: 0.55 }, colors, scalar: 1.05 });
+    return () => confetti.reset();
+  }, [rewardModalOpen]);
+  useEffect(() => {
     if (!revealing || !pendingReward) return undefined;
     // Fallback for devices that fail to dispatch animationend (e.g. a tab resumes late).
     const fallback = window.setTimeout(finishReveal, 4700);
@@ -250,7 +263,7 @@ export default function App() {
   async function submitWithdrawal(e) {
     e.preventDefault();if(withdrawing)return;
     setWithdrawing(true);
-    const result=await perform(()=>apiRequest("/api/withdrawals",{method:"POST",body:JSON.stringify({amountUsdt:amount,walletAddress:wallet})}),"Withdrawal request submitted for admin review.");
+    const result=await perform(()=>apiRequest("/api/withdrawals",{method:"POST",body:JSON.stringify({amountUsdt:amount,walletAddress:wallet})}),"Withdrawal request submitted successfully.");
     if(result){setWithdrawOpen(false);setWallet("");}
     setWithdrawing(false);
   }
@@ -269,6 +282,6 @@ export default function App() {
     </main>
     {notice&&<div className="toast-message" role="status">{notice}<button onClick={()=>setNotice("")} aria-label="Dismiss"><X size={14}/></button></div>}
     <nav className="bottom-nav" aria-label="Main navigation">{navItems.map(({id,label,Icon})=><button key={id} className={active===id?"active":""} onClick={()=>setActive(id)}><Icon size={20} strokeWidth={active===id?2.2:1.7}/><span>{label}</span></button>)}</nav>
-    {withdrawOpen&&<div className="modal-backdrop" onClick={()=>setWithdrawOpen(false)}><form className="withdraw-modal" onSubmit={submitWithdrawal} onClick={e=>e.stopPropagation()}><button type="button" className="modal-close" onClick={()=>setWithdrawOpen(false)}>×</button><span className="modal-icon"><Wallet size={22}/></span><span className="eyebrow">USDT · BEP20</span><h2>Withdraw funds</h2><p>Requests are reviewed by the BOX EARN admin before payment.</p><div className="modal-balance"><span>AVAILABLE BALANCE</span><b>{Number(user?.balanceUsdt||0).toFixed(2)} USDT</b></div><label className="withdraw-label">Amount (USDT)<input type="number" min="0.10" step="0.000001" required value={amount} onChange={e=>setAmount(e.target.value)}/></label><label className="withdraw-label">BEP20 wallet address<input type="text" required placeholder="0x…" value={wallet} onChange={e=>setWallet(e.target.value)}/></label><button className="primary-button" type="submit" disabled={withdrawing}>{withdrawing?"Submitting…":"Submit withdrawal request"}<ArrowRight size={16}/></button></form></div>}
+    {withdrawOpen&&<div className="modal-backdrop" onClick={()=>setWithdrawOpen(false)}><form className="withdraw-modal" onSubmit={submitWithdrawal} onClick={e=>e.stopPropagation()}><button type="button" className="modal-close" onClick={()=>setWithdrawOpen(false)}>×</button><span className="modal-icon"><Wallet size={22}/></span><span className="eyebrow">USDT · BEP20</span><h2>Withdraw funds</h2><p>Your request will be checked before payment is processed.</p><div className="modal-balance"><span>AVAILABLE BALANCE</span><b>{Number(user?.balanceUsdt||0).toFixed(2)} USDT</b></div><label className="withdraw-label">Amount (USDT)<input type="number" min="0.10" step="0.000001" required value={amount} onChange={e=>setAmount(e.target.value)}/></label><label className="withdraw-label">BEP20 wallet address<input type="text" required placeholder="0x…" value={wallet} onChange={e=>setWallet(e.target.value)}/></label><button className="primary-button" type="submit" disabled={withdrawing}>{withdrawing?"Submitting…":"Submit withdrawal request"}<ArrowRight size={16}/></button></form></div>}
   </div>;
 }
