@@ -165,3 +165,178 @@ body{background:radial-gradient(ellipse at 50% -12%,rgba(190,151,83,.10),transpa
 .mystery-card .custom-gift{width:150px;height:150px}
 @media(max-width:390px){.premium-box-stage .custom-gift{width:185px;height:185px}}
 @media(prefers-reduced-motion:reduce){.custom-gift-art.revealing .custom-gift,.custom-gift-art.revealing .custom-gift-lid,.custom-gift-spark{animation:none!important}}
+
+
+/* BOX EARN BRAND REFINEMENT — emerald, silver and midnight */
+:root{
+  --green:#21c982;
+  --cyan:#68dce4;
+  --gold:#bfcac7;
+  --silver:#e2ece9;
+  --line:rgba(151,190,174,.16);
+}
+body{
+  color:#edf5f1;
+  background:
+    radial-gradient(ellipse at 12% 0%,rgba(24,174,112,.12),transparent 34%),
+    radial-gradient(ellipse at 92% 18%,rgba(83,177,194,.075),transparent 30%),
+    #060a0a;
+}
+.app-shell{
+  background:
+    radial-gradient(ellipse at 50% -8%,rgba(19,127,83,.11),transparent 40%),
+    linear-gradient(180deg,#090f0e 0%,#080d0d 48%,#070b0b 100%);
+}
+.topbar{
+  background:rgba(6,11,10,.94);
+  border-bottom:1px solid rgba(147,205,177,.13);
+  backdrop-filter:blur(18px);
+}
+.brand img{filter:drop-shadow(0 0 13px rgba(36,207,132,.18))}
+.eyebrow,.balance-caption,.secure-label{letter-spacing:1.15px}
+h1,h2,h3,.balance-amount,.box-counter strong{letter-spacing:-.65px}
+.green-dot{color:#43e3a0}
+.muted{color:#9aaea5}
+.balance-card,.checkin-card,.task-card,.wallet-panel,.invite-hero,.referral-link-card,.mystery-card{
+  border-color:rgba(137,193,165,.17);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 14px 38px rgba(0,0,0,.16);
+}
+.balance-card{
+  background:radial-gradient(ellipse at 100% 0%,rgba(91,216,169,.13),transparent 48%),
+    linear-gradient(125deg,#10241b 0%,#101b19 58%,#10191b 100%);
+}
+.balance-amount{color:#f1f8f4}
+.balance-amount span{color:#91cdb0}
+.withdraw-button,.primary-button{
+  background:linear-gradient(110deg,#0f9f65,#21c982 56%,#70dfb1);
+  color:#04140d;
+  box-shadow:0 8px 24px rgba(25,191,120,.16),inset 0 1px 0 rgba(255,255,255,.28);
+}
+.primary-button:active,.withdraw-button:active{transform:translateY(1px)}
+.quick-stat,.earn-row,.referral-strip{
+  border-color:rgba(137,193,165,.14);
+  background:linear-gradient(115deg,rgba(17,31,25,.96),rgba(13,22,22,.96));
+}
+.stat-icon.emerald,.checkin-icon,.earn-icon{
+  color:#5be0a3;
+  background:rgba(34,201,129,.13);
+  border:1px solid rgba(53,215,148,.15);
+}
+.stat-icon.cyan,.cyan-bg{color:#7be0e7;background:rgba(104,220,228,.10)}
+.checkin-card{
+  background:linear-gradient(145deg,#111d18,#0d1514 72%,#10151a);
+}
+.day-reward.today{
+  border-color:rgba(53,218,145,.58);
+  background:linear-gradient(180deg,rgba(35,196,126,.17),rgba(22,105,72,.09));
+  box-shadow:0 0 18px rgba(31,205,128,.08);
+}
+.day-reward.completed{color:#a6e6c5}
+.mystery-card{
+  overflow:hidden;
+  background:
+    radial-gradient(ellipse at 78% 50%,rgba(40,205,133,.15),transparent 42%),
+    radial-gradient(ellipse at 95% 8%,rgba(103,218,226,.08),transparent 36%),
+    linear-gradient(125deg,#102019,#10191a 65%,#11131b);
+}
+.limited-tag{color:#9debc3;background:rgba(32,190,119,.09);border-color:rgba(57,215,146,.19)}
+.dark-button,.outline-button{
+  border-color:rgba(91,218,160,.32);
+}
+.bottom-nav{
+  background:rgba(6,11,10,.97);
+  border-top-color:rgba(147,205,177,.15);
+  backdrop-filter:blur(20px);
+}
+.bottom-nav button.active{color:#58dda0}
+.bottom-nav button.active:before{background:#25c982;box-shadow:0 0 13px #25c98266}
+.page-intro p,.boxes-heading p{color:#9aaca4}
+.task-card,.empty-state,.notice-card,.profile-card,.settings-list{
+  background:linear-gradient(145deg,rgba(17,29,24,.96),rgba(12,19,19,.98));
+}
+.task-tag,.reward-chip,.member-pill,.streak-pill{
+  border-color:rgba(57,207,140,.2);
+  color:#9be7bd;
+  background:rgba(35,178,113,.09);
+}
+.invite-hero{
+  background:radial-gradient(ellipse at 50% 0%,rgba(42,199,133,.15),transparent 55%),linear-gradient(145deg,#12231b,#101819);
+}
+.invite-orbit{color:#69e2a9;border-color:rgba(72,220,155,.28);background:rgba(34,196,126,.10)}
+/* Gift artwork: clean jewel-green body, silver identity mark, restrained cyan edge light. */
+.custom-gift-art .box-art-glow{
+  background:radial-gradient(ellipse,rgba(35,218,139,.28),rgba(92,214,218,.10) 48%,transparent 72%);
+}
+.custom-gift-body{
+  border:1px solid rgba(139,255,203,.68);
+  background:linear-gradient(105deg,#03452f 0%,#087b4d 24%,#10a86a 50%,#08764b 76%,#033c2a 100%);
+  box-shadow:inset 0 0 26px rgba(121,255,195,.16),0 0 24px rgba(27,219,135,.24);
+}
+.custom-gift-side{background:linear-gradient(90deg,#032e24,#021f1b)}
+.custom-gift-ribbon,.custom-lid-ribbon{
+  background:linear-gradient(90deg,#71827e 0%,#e8f1ed 36%,#aabbb5 62%,#62756f 100%);
+  box-shadow:0 0 11px rgba(204,232,221,.26);
+}
+.custom-gift-emblem{
+  color:#e8f3ee;
+  background:radial-gradient(circle,#0d8153,#043c2b);
+  border-color:#c7d7d1;
+  box-shadow:0 0 16px rgba(175,230,208,.24);
+}
+.custom-gift-lid{
+  border-color:#8cf0bd;
+  background:linear-gradient(100deg,#086342,#19b878 38%,#0b8b57 75%,#045638);
+  box-shadow:inset 0 2px 8px rgba(191,255,220,.27),0 4px 13px #0008,0 0 18px rgba(36,216,140,.25);
+}
+.custom-bow i{
+  border-color:#cbd9d4;
+  background:linear-gradient(135deg,#f1f7f4,#879b94 70%);
+}
+.custom-bow b{
+  background:radial-gradient(circle at 35% 25%,#fff,#91a9a0 75%);
+  border-color:#e3efea;
+}
+.custom-gift-spark{color:#9df5ca;text-shadow:0 0 12px rgba(86,241,171,.8)}
+.custom-spark-b{color:#9ceaf0}
+.custom-gift{filter:drop-shadow(0 20px 22px rgba(0,0,0,.58)) drop-shadow(0 0 12px rgba(28,196,122,.10))}
+.custom-gift-art.inactive .custom-gift{filter:grayscale(.62) brightness(.62) drop-shadow(0 12px 13px #0008)}
+.premium-box-hero{
+  border-color:rgba(135,203,171,.24);
+  background:
+    radial-gradient(ellipse at 50% 38%,rgba(31,178,113,.15),transparent 46%),
+    radial-gradient(ellipse at 50% 0%,rgba(111,220,225,.07),transparent 45%),
+    linear-gradient(155deg,#101d18 0%,#0b1413 55%,#0d1416 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.055),0 22px 58px rgba(0,0,0,.34);
+}
+.premium-box-hero:before{border-color:rgba(162,207,187,.10)}
+.premium-box-hero:after{border-color:rgba(111,220,190,.10);box-shadow:0 0 0 18px rgba(60,206,145,.022),0 0 0 42px rgba(91,215,207,.014)}
+.gift-halo{background:radial-gradient(circle,rgba(40,207,133,.20),rgba(94,219,213,.07) 42%,transparent 70%)}
+.counter-label{color:#b7cbc1}
+.box-counter strong{
+  background:linear-gradient(135deg,#f0f7f3,#a8c5b8 52%,#65dda4);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:0 4px 24px rgba(74,216,153,.12);
+}
+.counter-caption{color:#91a99d}
+.sound-toggle{border-color:rgba(151,202,178,.20);color:#b7c9c0}
+.sound-toggle i{color:#6de3a9}
+.box-invitation h2{color:#edf7f1}
+.box-invitation p{color:#9aafa4}
+.premium-open-button{
+  background:linear-gradient(105deg,#0c9a61 0%,#28d08a 52%,#a2edc9 100%);
+  color:#04170e;
+  box-shadow:0 9px 27px rgba(31,201,127,.18),inset 0 1px 0 rgba(255,255,255,.42);
+}
+.premium-open-button.is-disabled{background:linear-gradient(100deg,#25352e,#1a2825);color:#82988c}
+.reward-popup{
+  border-color:rgba(118,219,168,.34);
+  background:radial-gradient(ellipse at 50% 0%,rgba(40,196,126,.15),transparent 52%),linear-gradient(155deg,#14231b,#10191a 58%,#10191b);
+}
+.reward-kicker,.reward-amount{color:#a8edc7}
+.reward-gift-mark{color:#8ce9b6;border-color:rgba(118,219,168,.32);background:linear-gradient(145deg,rgba(35,194,122,.15),rgba(91,218,221,.08))}
+.reward-added{color:#7ce4aa}
+.reward-popup .primary-button{background:linear-gradient(105deg,#0e9f64,#28cb85 52%,#a2edc9);color:#04170e}
+@media(max-width:390px){
+  .brand img{width:142px}
+  .premium-box-hero{border-radius:21px}
+}
