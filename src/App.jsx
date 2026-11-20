@@ -66,14 +66,14 @@ function TasksPage({ tasks, onSubmit, submitting, onWatchAd, watchingAd, adStats
   </div>;
 }
 
-function BoxesPage({ user, activity = [], onOpen, opening, reward }) {
+function BoxesPage({ user, activity = [], activityStats, onOpen, opening, reward }) {
   return <div className="page-content subpage"><div className="page-intro"><span className="eyebrow">THE REWARD REVEAL</span><h1>Mystery boxes<span className="green-dot">.</span></h1><p className="muted">Every box holds a little surprise.</p></div>
     <div className="boxes-hero"><span className="limited-tag"><Sparkles size={12}/> YOUR BOX COLLECTION</span><BoxArtwork open={Boolean(reward)}/><div className="boxes-count"><b>{user?.boxes ?? 0}</b><span>BOXES AVAILABLE</span></div><h2>{reward?"Congratulations!":"Ready for a surprise?"}</h2><p>{reward?"Your reward has been added to your account balance.":"Open a box to reveal a random USDT reward between $0.05 and $0.09."}</p>{reward&&<div className="reward-chip"><Sparkles size={13}/> You won {reward} USDT</div>}<button className="primary-button" onClick={onOpen} disabled={opening || !(user?.boxes>0)}>{opening?"Opening…":user?.boxes>0?"Open a mystery box":"No boxes available"}<ArrowRight size={16}/></button><small className="fine-print">Every opening is recorded in your account ledger.</small></div>
     <div className="reward-range"><span>REWARD RANGE</span><b>$0.05 – $0.09 <small>USDT</small></b></div>
     <div className="box-stats-grid">
       <div className="box-stat"><span>AVAILABLE</span><b>{user?.boxes ?? 0}</b><small>ready to open</small></div>
-      <div className="box-stat"><span>OPENED</span><b>{activity.filter(a=>a.event_type==="box_opened").length}</b><small>boxes revealed</small></div>
-      <div className="box-stat"><span>BOXES EARNED</span><b>{activity.reduce((sum,a)=>sum+Math.max(0,Number(a.boxes_delta||0)),0)}</b><small>from recent activity</small></div>
+      <div className="box-stat"><span>OPENED</span><b>{activityStats?.boxesOpened ?? 0}</b><small>boxes revealed</small></div>
+      <div className="box-stat"><span>BOXES EARNED</span><b>{activityStats?.boxesEarned ?? 0}</b><small>from recent activity</small></div>
     </div>
     <SectionTitle eyebrow="YOUR HISTORY" title="Recent box activity"/>
     {activity.length ? <div className="box-activity-list">{activity.slice(0,12).map((item,index)=>{
@@ -114,6 +114,7 @@ export default function App() {
   const [tasks,setTasks]=useState([]);
   const [adStats,setAdStats]=useState(null);
   const [activity,setActivity]=useState([]);
+  const [activityStats,setActivityStats]=useState(null);
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState("");
   const [notice,setNotice]=useState("");
@@ -130,7 +131,7 @@ export default function App() {
 
   async function refreshData() {
     const results=await Promise.all([apiRequest("/api/me"),apiRequest("/api/referrals"),apiRequest("/api/tasks"),apiRequest("/api/ads/stats"),apiRequest("/api/activity")]);
-    setUser(results[0].user); setStats(results[1].stats); setReferrals(results[1].referrals||[]); setTasks(results[2].tasks||[]); setAdStats(results[3].stats); setActivity(results[4].activity||[]);
+    setUser(results[0].user); setStats(results[1].stats); setReferrals(results[1].referrals||[]); setTasks(results[2].tasks||[]); setAdStats(results[3].stats); setActivity(results[4].activity||[]); setActivityStats(results[4].stats||null);
   }
   useEffect(()=>{
     let live=true;
@@ -204,7 +205,7 @@ export default function App() {
     <main key={active} className="main-view">
       {active==="home"&&<HomePage user={user} stats={stats} onNavigate={setActive} checkedIn={checkedIn} checkinDay={checkinDay} onCheckIn={checkIn} checkingIn={checkingIn} onWithdraw={()=>setWithdrawOpen(true)}/>}
       {active==="tasks"&&<TasksPage tasks={tasks} onSubmit={submitTask} submitting={submitting} onWatchAd={watchAd} watchingAd={watchingAd} adStats={adStats}/>}
-      {active==="boxes"&&<BoxesPage user={user} activity={activity} onOpen={openBox} opening={opening} reward={lastReward}/>}
+      {active==="boxes"&&<BoxesPage user={user} activity={activity} activityStats={activityStats} onOpen={openBox} opening={opening} reward={lastReward}/>}
       {active==="invite"&&<InvitePage user={user} stats={stats} referrals={referrals}/>}
       {active==="profile"&&<ProfilePage user={user} onWithdraw={()=>setWithdrawOpen(true)}/>}
     </main>
