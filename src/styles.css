@@ -35,3 +35,27 @@
 .box-activity-item>strong{white-space:nowrap;font-size:10px;color:#82e2ad}
 .box-activity-item>strong.negative{color:#d7bd80}
 @media(max-width:360px){.day-reward span{font-size:6px}.day-reward strong{font-size:17px}.day-reward small{font-size:6px}.checkin-days{gap:3px}}
+
+
+/* Original BOX EARN Library artwork and premium 4-second reveal */
+.brand{gap:0;min-width:0}
+.brand img{display:block;width:132px;height:49px;object-fit:contain;object-position:left center}
+.original-box-artwork{isolation:isolate;overflow:visible}
+.original-box-artwork .box-art-glow{position:absolute;inset:14% 12%;border-radius:50%;background:radial-gradient(ellipse,#21d98b38 0%,#13a86b17 42%,transparent 72%);filter:blur(18px);z-index:-1}
+.original-box-artwork .box-image{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;mix-blend-mode:screen;filter:drop-shadow(0 12px 18px #0008)}
+.original-box-artwork .box-image-closed{opacity:1}
+.original-box-artwork .box-image-slight,.original-box-artwork .box-image-open{opacity:0}
+.original-box-artwork.revealing .box-image-closed{animation:box-closed-sequence 4s ease-in-out both}
+.original-box-artwork.revealing .box-image-slight{animation:box-slight-sequence 4s ease-in-out both}
+.original-box-artwork.revealing .box-image-open{animation:box-open-sequence 4s ease-in-out both}
+@keyframes box-closed-sequence{0%,21%{opacity:1;transform:scale(1)}27%,100%{opacity:0;transform:scale(.97)}}
+@keyframes box-slight-sequence{0%,23%{opacity:0;transform:translateY(7px) scale(.98)}30%,48%{opacity:1;transform:translateY(0) scale(1)}55%,100%{opacity:0;transform:scale(1.015)}}
+@keyframes box-open-sequence{0%,51%{opacity:0;transform:scale(.98)}59%,100%{opacity:1;transform:scale(1.035)}}
+.boxes-hero .original-box-artwork{height:205px}
+.mystery-card .original-box-artwork{right:-3px;top:14px;height:166px}
+@media(prefers-reduced-motion:reduce){
+ .original-box-artwork.revealing .box-image{animation:none}
+ .original-box-artwork.revealing .box-image-closed{opacity:0}
+ .original-box-artwork.revealing .box-image-slight{opacity:0}
+ .original-box-artwork.revealing .box-image-open{opacity:1}
+}
