@@ -39,10 +39,10 @@ function HomePage({ user, stats, checkedIn, checkinDay, onNavigate, onCheckIn, c
       <div className="quick-stat" onClick={() => onNavigate("boxes")} role="button" tabIndex={0}><span className="stat-icon emerald"><Gift size={17}/></span><div><small>AVAILABLE BOXES</small><strong>{user?.boxes ?? 0} <em>boxes</em></strong></div><ChevronRight size={16}/></div>
       <div className="quick-stat" onClick={() => onNavigate("invite")} role="button" tabIndex={0}><span className="stat-icon cyan"><Users size={17}/></span><div><small>REFERRALS</small><strong>{stats?.total ?? 0} <em>friends</em></strong></div><ChevronRight size={16}/></div>
     </div>
-    <section className="checkin-card"><div className="checkin-head"><div className="checkin-icon"><CalendarCheck2 size={18}/></div><div><span className="eyebrow">DAILY REWARD</span><h3>Daily check-in</h3></div><span className="streak-pill">DAY {nextDay} OF 3</span></div>
-      <div className="checkin-days">{[1,2,3].map((day,i)=><div className={"day-reward " + (i===nextDay-1?"today ":"") + (checkedIn && i===nextDay-1?"claimed":"")} key={day}><span>DAY {day}</span><strong>{day}</strong><small>BOX{day>1?"ES":""}</small>{checkedIn && i===nextDay-1 && <i><Check size={11}/></i>}</div>)}</div>
+    <section className="checkin-card"><div className="checkin-head"><div className="checkin-icon"><CalendarCheck2 size={18}/></div><div><span className="eyebrow">DAILY REWARD</span><h3>Daily check-in</h3></div><span className="streak-pill">DAY {nextDay} OF 7</span></div>
+      <div className="checkin-days">{[1,2,3,4,5,6,7].map((day,i)=><div className={"day-reward " + (i===nextDay-1?"today ":"") + (checkedIn && day===nextDay?"claimed":"") + (day<nextDay || (checkedIn && day===nextDay)?" completed":"")} key={day}><span>DAY {day}</span><strong>{day}</strong><small>{day===1?"BOX":"BOXES"}</small>{(day<nextDay || (checkedIn && day===nextDay)) && <i><Check size={11}/></i>}</div>)}</div>
       <button className={"primary-button checkin-button " + (checkedIn?"button-done":"")} onClick={onCheckIn} disabled={checkedIn || checkingIn}>{checkedIn?<><CheckCircle2 size={17}/> Checked in today</>:checkingIn?"Claiming reward…":<>Claim today's box <ArrowRight size={16}/></>}</button>
-      <p className="fine-print">Collect 1, 2 and 3 boxes in rotation. Your check-in is recorded securely.</p>
+      <p className="fine-print">Check in for 7 days in a row to earn 1 to 7 boxes. Miss a day and your streak restarts.</p>
     </section>
     <section className="mystery-section"><SectionTitle eyebrow="A LITTLE MYSTERY. A REAL REWARD." title="Your mystery boxes" action="View all" onAction={() => onNavigate("boxes")}/>
       <div className="mystery-card"><div className="mystery-copy"><span className="limited-tag"><Sparkles size={12}/> THE BOX EXPERIENCE</span><h3>Something good<br/>is inside.</h3><p>Open a box and discover your USDT reward.</p><button className="dark-button" onClick={() => onNavigate("boxes")}>Explore boxes <ArrowUpRight size={15}/></button></div><BoxArtwork/><div className="mystery-count"><Ticket size={13}/> <b>{user?.boxes ?? 0}</b> BOXES READY</div></div>
@@ -66,11 +66,22 @@ function TasksPage({ tasks, onSubmit, submitting, onWatchAd, watchingAd, adStats
   </div>;
 }
 
-function BoxesPage({ user, onOpen, opening, reward }) {
+function BoxesPage({ user, activity = [], onOpen, opening, reward }) {
   return <div className="page-content subpage"><div className="page-intro"><span className="eyebrow">THE REWARD REVEAL</span><h1>Mystery boxes<span className="green-dot">.</span></h1><p className="muted">Every box holds a little surprise.</p></div>
     <div className="boxes-hero"><span className="limited-tag"><Sparkles size={12}/> YOUR BOX COLLECTION</span><BoxArtwork open={Boolean(reward)}/><div className="boxes-count"><b>{user?.boxes ?? 0}</b><span>BOXES AVAILABLE</span></div><h2>{reward?"Congratulations!":"Ready for a surprise?"}</h2><p>{reward?"Your reward has been added to your account balance.":"Open a box to reveal a random USDT reward between $0.05 and $0.09."}</p>{reward&&<div className="reward-chip"><Sparkles size={13}/> You won {reward} USDT</div>}<button className="primary-button" onClick={onOpen} disabled={opening || !(user?.boxes>0)}>{opening?"Opening…":user?.boxes>0?"Open a mystery box":"No boxes available"}<ArrowRight size={16}/></button><small className="fine-print">Every opening is recorded in your account ledger.</small></div>
     <div className="reward-range"><span>REWARD RANGE</span><b>$0.05 – $0.09 <small>USDT</small></b></div>
-    <SectionTitle eyebrow="YOUR HISTORY" title="Recent box activity"/><div className="empty-state"><History size={22}/><b>Box history</b><span>Your completed openings are recorded in your account ledger.</span></div>
+    <div className="box-stats-grid">
+      <div className="box-stat"><span>AVAILABLE</span><b>{user?.boxes ?? 0}</b><small>ready to open</small></div>
+      <div className="box-stat"><span>OPENED</span><b>{activity.filter(a=>a.event_type==="box_opened").length}</b><small>boxes revealed</small></div>
+      <div className="box-stat"><span>BOXES EARNED</span><b>{activity.reduce((sum,a)=>sum+Math.max(0,Number(a.boxes_delta||0)),0)}</b><small>from recent activity</small></div>
+    </div>
+    <SectionTitle eyebrow="YOUR HISTORY" title="Recent box activity"/>
+    {activity.length ? <div className="box-activity-list">{activity.slice(0,12).map((item,index)=>{
+      const opened=item.event_type==="box_opened";
+      const title=opened?"Mystery box opened":item.event_type==="daily_checkin"?"Daily check-in reward":item.event_type==="welcome_bonus"?"Welcome bonus":item.event_type==="task_reward"?"Task reward":item.event_type==="referral_reward"?"Referral reward":item.event_type==="monetag_ads_reward"?"Ad milestone reward":item.event_type.replaceAll("_"," ");
+      const delta=Number(item.boxes_delta||0);
+      return <div className="box-activity-item" key={item.reference||index}><span className={"box-activity-icon "+(opened?"opened":"")}><Gift size={16}/></span><div><b>{title}</b><small>{new Date(item.created_at).toLocaleString()}</small></div><strong className={delta<0?"negative":""}>{delta>0?"+":""}{delta} {Math.abs(delta)===1?"box":"boxes"}</strong></div>;
+    })}</div> : <div className="empty-state"><History size={22}/><b>No box activity yet</b><span>Your check-ins, rewards and box openings will appear here.</span></div>}
   </div>;
 }
 
@@ -102,6 +113,7 @@ export default function App() {
   const [referrals,setReferrals]=useState([]);
   const [tasks,setTasks]=useState([]);
   const [adStats,setAdStats]=useState(null);
+  const [activity,setActivity]=useState([]);
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState("");
   const [notice,setNotice]=useState("");
@@ -117,8 +129,8 @@ export default function App() {
   const current=useMemo(()=>navItems.find(n=>n.id===active),[active]);
 
   async function refreshData() {
-    const results=await Promise.all([apiRequest("/api/me"),apiRequest("/api/referrals"),apiRequest("/api/tasks"),apiRequest("/api/ads/stats")]);
-    setUser(results[0].user); setStats(results[1].stats); setReferrals(results[1].referrals||[]); setTasks(results[2].tasks||[]); setAdStats(results[3].stats);
+    const results=await Promise.all([apiRequest("/api/me"),apiRequest("/api/referrals"),apiRequest("/api/tasks"),apiRequest("/api/ads/stats"),apiRequest("/api/activity")]);
+    setUser(results[0].user); setStats(results[1].stats); setReferrals(results[1].referrals||[]); setTasks(results[2].tasks||[]); setAdStats(results[3].stats); setActivity(results[4].activity||[]);
   }
   useEffect(()=>{
     let live=true;
@@ -139,8 +151,8 @@ export default function App() {
   const yesterdayDate=new Date(today+"T12:00:00Z"); yesterdayDate.setUTCDate(yesterdayDate.getUTCDate()-1);
   const yesterday=yesterdayDate.toISOString().slice(0,10);
   const checkedIn=user?.lastCheckinDate===today;
-  const checkinCycleNext=user?.lastCheckinDate===yesterday?((user.checkinCycle+1)%3):0;
-  const checkinDay=checkedIn?(user?.checkinCycle??0)+1:checkinCycleNext+1;
+  const previousCheckinDay=user?.lastCheckinDate===yesterday?(user?.checkinDay||0):0;
+  const checkinDay=checkedIn?(user?.checkinDay||1):(previousCheckinDay>=7?1:previousCheckinDay+1);
   async function perform(action,success) {
     setNotice("");
     try { const result=await action(); await refreshData(); if(success)setNotice(success); return result; }
@@ -192,7 +204,7 @@ export default function App() {
     <main key={active} className="main-view">
       {active==="home"&&<HomePage user={user} stats={stats} onNavigate={setActive} checkedIn={checkedIn} checkinDay={checkinDay} onCheckIn={checkIn} checkingIn={checkingIn} onWithdraw={()=>setWithdrawOpen(true)}/>}
       {active==="tasks"&&<TasksPage tasks={tasks} onSubmit={submitTask} submitting={submitting} onWatchAd={watchAd} watchingAd={watchingAd} adStats={adStats}/>}
-      {active==="boxes"&&<BoxesPage user={user} onOpen={openBox} opening={opening} reward={lastReward}/>}
+      {active==="boxes"&&<BoxesPage user={user} activity={activity} onOpen={openBox} opening={opening} reward={lastReward}/>}
       {active==="invite"&&<InvitePage user={user} stats={stats} referrals={referrals}/>}
       {active==="profile"&&<ProfilePage user={user} onWithdraw={()=>setWithdrawOpen(true)}/>}
     </main>
