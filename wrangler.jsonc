@@ -3,6 +3,18 @@
   "name": "boxearnrobot",
   "main": "src/worker.js",
   "compatibility_date": "2026-11-20",
+  "observability": {
+    "enabled": true,
+    "traces": { "enabled": true }
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "boxearn-prod",
+      "database_id": "81b8ca69-0d63-400f-b3ae-98c23e8f6727",
+      "migrations_dir": "migrations"
+    }
+  ],
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
