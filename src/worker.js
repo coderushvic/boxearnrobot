@@ -259,6 +259,39 @@ async function adminApi(request, env, path) {
   if (!env.ADMIN_SECRET) return fail("Admin actions are not configured.", 503, "admin_not_configured");
   const provided = (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
   if (!safeEqual(provided, env.ADMIN_SECRET)) return fail("Not authorized.", 401, "admin_unauthorized");
+  if (path === "/api/admin/dashboard" && request.method === "GET") {
+    const [users, pendingTasks, pendingWithdrawals, balances] = await Promise.all([
+      env.DB.prepare("SELECT COUNT(*) AS total FROM users").first(),
+      env.DB.prepare("SELECT COUNT(*) AS total FROM task_submissions WHERE status='pending'").first(),
+      env.DB.prepare("SELECT COUNT(*) AS total FROM withdrawals WHERE status='pending'").first(),
+      env.DB.prepare("SELECT COALESCE(SUM(balance_micro),0) AS total_micro, COALESCE(SUM(boxes),0) AS total_boxes FROM users").first()
+    ]);
+    return json({ ok: true, dashboard: { users: users?.total || 0, pendingTasks: pendingTasks?.total || 0, pendingWithdrawals: pendingWithdrawals?.total || 0, balanceMicro: balances?.total_micro || 0, boxesOutstanding: balances?.total_boxes || 0 } });
+  }
+  if (path === "/api/admin/tasks" && request.method === "GET") {
+    const rows = await env.DB.prepare("SELECT id,title,description,reward_boxes,task_type,active,created_at FROM tasks ORDER BY created_at DESC").all();
+    return json({ ok: true, tasks: rows.results || [] });
+  }
+  if (path === "/api/admin/tasks" && request.method === "POST") {
+    const body = await readJson(request);
+    const id = String(body.id || "").trim().toLowerCase();
+    const title = String(body.title || "").trim();
+    const description = String(body.description || "").trim();
+    const rewardBoxes = Number(body.rewardBoxes);
+    if (!/^[a-z0-9_-]{3,60}$/.test(id) || !title || title.length > 120 || !description || description.length > 600 || !Number.isInteger(rewardBoxes) || rewardBoxes < 1 || rewardBoxes > 100) {
+      return fail("Provide a valid task ID, title, description and reward between 1 and 100 boxes.");
+    }
+    await env.DB.prepare("INSERT INTO tasks (id,title,description,reward_boxes,task_type,active) VALUES (?,?,?,?,?,1) ON CONFLICT(id) DO UPDATE SET title=excluded.title,description=excluded.description,reward_boxes=excluded.reward_boxes,task_type=excluded.task_type,active=1")
+      .bind(id,title,description,rewardBoxes,String(body.taskType || "manual").slice(0,30)).run();
+    return json({ ok: true, task: { id,title,description,rewardBoxes,active:true } }, 201);
+  }
+  if (path === "/api/admin/tasks/reject" && request.method === "POST") {
+    const body = await readJson(request);
+    const result = await env.DB.prepare("UPDATE task_submissions SET status='rejected', reviewed_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=? AND status='pending'")
+      .bind(body.submissionId || "").run();
+    if (!result.meta?.changes) return fail("Pending submission not found or already reviewed.", 404, "submission_not_found");
+    return json({ ok: true, rejected: true });
+  }
   if (path === "/api/admin/submissions" && request.method === "GET") {
     const rows = await env.DB.prepare("SELECT s.id, s.telegram_id, s.task_id, s.proof, s.created_at, t.title, t.reward_boxes FROM task_submissions s JOIN tasks t ON t.id=s.task_id WHERE s.status='pending' ORDER BY s.created_at LIMIT 100").all();
     return json({ ok: true, submissions: rows.results || [] });
