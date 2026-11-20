@@ -292,7 +292,9 @@ export default function App() {
     } finally { setOpening(false); }
   }
   async function watchAd() {
-    if (watchingAd || !hasMonetagZone || adCooldown>0) return;
+    if (watchingAd) return;
+    if (!hasMonetagZone) { setNotice("Rewarded ads are being configured. Please try again soon."); return; }
+    if (adCooldown>0) { setNotice("Your next ad is available in "+Math.floor(adCooldown/60)+":"+String(adCooldown%60).padStart(2,"0")+"."); return; }
     setWatchingAd(true); setNotice("");
     const viewsBefore=adStats?.verifiedViews||0;
     try {
