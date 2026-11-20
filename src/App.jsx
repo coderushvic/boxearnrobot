@@ -6,6 +6,7 @@ import {
   Target, Ticket, UserRound, Users, Wallet, X
 } from "lucide-react";
 import { apiRequest, authenticate } from "./api.js";
+import { hasMonetagZone, playRewardedAd } from "./monetag.js";
 
 const navItems = [
   { id: "home", label: "Home", Icon: Home },
@@ -55,13 +56,13 @@ function HomePage({ user, stats, checkedIn, onNavigate, onCheckIn, checkingIn, o
   </div>;
 }
 
-function TasksPage({ tasks, onSubmit, submitting }) {
+function TasksPage({ tasks, onSubmit, submitting, onWatchAd, watchingAd, adStats }) {
   return <div className="page-content subpage"><div className="page-intro"><span className="eyebrow">YOUR EARNING HUB</span><h1>Tasks<span className="green-dot">.</span></h1><p className="muted">Complete verified activities and collect more mystery boxes.</p></div>
     <div className="task-summary"><div><small>TASKS AVAILABLE</small><b>{String(tasks.length).padStart(2,"0")}</b></div><div><small>REWARD SYSTEM</small><b>LIVE</b></div><div><small>VERIFICATION</small><b>ADMIN</b></div></div>
     <SectionTitle eyebrow="EARN BOXES" title="Available tasks"/>
     {tasks.length ? <div className="task-list">{tasks.map(t=><article className="task-card" key={t.id}><div className="task-card-top"><span className="task-icon"><Target size={19}/></span><span className="task-tag">VERIFIED TASK</span></div><h3>{t.title}</h3><p>{t.description}</p><div className="task-card-bottom"><span className="reward-chip"><Gift size={13}/>{t.reward_boxes} boxes</span><button className="outline-button" disabled={submitting===t.id} onClick={()=>onSubmit(t.id)}>{submitting===t.id?"Submitting…":"Submit task"}</button></div></article>)}</div> : <div className="empty-state"><Target size={22}/><b>New tasks are being prepared</b><span>Verified tasks will appear here when their rules and reward settings are configured.</span></div>}
     <div className="notice-card"><ShieldCheck size={18}/><p>Task rewards are credited only after server-side approval. Repeated submissions cannot generate extra boxes.</p></div>
-    <article className="task-card"><div className="task-card-top"><span className="task-icon"><PlayCircle size={19}/></span><span className="task-tag">MONETAG</span></div><h3>Rewarded advertisements</h3><p>Target: 200 verified ad views for 50 boxes. Ad rewards remain disabled until the official Monetag postback is configured and verified.</p><div className="task-card-bottom"><span className="reward-chip"><Gift size={13}/>50 boxes / 200 verified ads</span><span className="member-pill">CONNECTING</span></div></article>
+    <article className="task-card"><div className="task-card-top"><span className="task-icon"><PlayCircle size={19}/></span><span className="task-tag">MONETAG</span></div><h3>Rewarded advertisements</h3><p>Target: 200 verified ad views for 50 boxes. Ad rewards remain disabled until the official Monetag postback is configured and verified.</p><div className="task-card-bottom"><span className="reward-chip"><Gift size={13}/>{adStats?.verifiedViews ?? 0} / 200 verified ads</span><button className="outline-button" disabled={!hasMonetagZone || watchingAd} onClick={onWatchAd}>{!hasMonetagZone ? "Zone ID needed" : watchingAd ? "Loading ad…" : "Watch ad"}</button></div><p className="fine-print">50 boxes are credited after every 200 unique, paid impressions confirmed by Monetag.</p></article>
   </div>;
 }
 
@@ -100,12 +101,14 @@ export default function App() {
   const [stats,setStats]=useState(null);
   const [referrals,setReferrals]=useState([]);
   const [tasks,setTasks]=useState([]);
+  const [adStats,setAdStats]=useState(null);
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState("");
   const [notice,setNotice]=useState("");
   const [checkingIn,setCheckingIn]=useState(false);
   const [submitting,setSubmitting]=useState("");
   const [opening,setOpening]=useState(false);
+  const [watchingAd,setWatchingAd]=useState(false);
   const [lastReward,setLastReward]=useState("");
   const [withdrawOpen,setWithdrawOpen]=useState(false);
   const [amount,setAmount]=useState("0.10");
@@ -114,8 +117,8 @@ export default function App() {
   const current=useMemo(()=>navItems.find(n=>n.id===active),[active]);
 
   async function refreshData() {
-    const results=await Promise.all([apiRequest("/api/me"),apiRequest("/api/referrals"),apiRequest("/api/tasks")]);
-    setUser(results[0].user); setStats(results[1].stats); setReferrals(results[1].referrals||[]); setTasks(results[2].tasks||[]);
+    const results=await Promise.all([apiRequest("/api/me"),apiRequest("/api/referrals"),apiRequest("/api/tasks"),apiRequest("/api/ads/stats")]);
+    setUser(results[0].user); setStats(results[1].stats); setReferrals(results[1].referrals||[]); setTasks(results[2].tasks||[]); setAdStats(results[3].stats);
   }
   useEffect(()=>{
     let live=true;
@@ -152,6 +155,17 @@ export default function App() {
     if(result)setLastReward(result.rewardUsdt);
     setOpening(false);
   }
+  async function watchAd() {
+    if (watchingAd || !hasMonetagZone) return;
+    setWatchingAd(true); setNotice("");
+    try {
+      const session=await apiRequest("/api/ads/session",{method:"POST",body:"{}"});
+      await playRewardedAd(session.ymid);
+      await refreshData();
+      setNotice("Ad closed. Monetag will credit progress only after its server confirms a paid impression.");
+    } catch(e) { setNotice(e.message || "The ad could not be verified. Please try again later."); }
+    finally { setWatchingAd(false); }
+  }
   async function submitTask(taskId) {
     setSubmitting(taskId);
     await perform(()=>apiRequest("/api/tasks/submit",{method:"POST",body:JSON.stringify({taskId})}),"Task submitted for review.");
@@ -172,7 +186,7 @@ export default function App() {
     <header className="topbar"><Brand/><button className="top-avatar" onClick={()=>setActive("profile")} aria-label="Open profile"><UserRound size={17}/></button></header>
     <main key={active} className="main-view">
       {active==="home"&&<HomePage user={user} stats={stats} onNavigate={setActive} checkedIn={checkedIn} onCheckIn={checkIn} checkingIn={checkingIn} onWithdraw={()=>setWithdrawOpen(true)}/>}
-      {active==="tasks"&&<TasksPage tasks={tasks} onSubmit={submitTask} submitting={submitting}/>}
+      {active==="tasks"&&<TasksPage tasks={tasks} onSubmit={submitTask} submitting={submitting} onWatchAd={watchAd} watchingAd={watchingAd} adStats={adStats}/>}
       {active==="boxes"&&<BoxesPage user={user} onOpen={openBox} opening={opening} reward={lastReward}/>}
       {active==="invite"&&<InvitePage user={user} stats={stats} referrals={referrals}/>}
       {active==="profile"&&<ProfilePage user={user} onWithdraw={()=>setWithdrawOpen(true)}/>}
