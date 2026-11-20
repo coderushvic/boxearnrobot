@@ -513,3 +513,16 @@
     font-size:9px;
   }
 }
+
+
+/* Mystery Box page: put the live available-box number visibly on the gift's front panel */
+.boxes-page .custom-gift-body{position:absolute;}
+.boxes-page .custom-gift-body .home-box-count{
+  left:50%;right:auto;top:auto;bottom:7%;transform:translateX(-50%);
+  min-width:54px;height:25px;padding:0 9px;display:flex;align-items:center;justify-content:center;
+  border:1px solid #ffe8b2;border-radius:7px;
+  background:linear-gradient(135deg,#f4d68e,#b47b2c);color:#241707;
+  font:900 12px Manrope;letter-spacing:.2px;
+  box-shadow:0 3px 10px #0009,inset 0 1px #fff9;
+}
+@media(max-width:390px){.boxes-page .custom-gift-body .home-box-count{min-width:49px;height:23px;font-size:11px;bottom:7%;}}
