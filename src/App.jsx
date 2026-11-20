@@ -332,7 +332,12 @@ export default function App() {
     setWithdrawing(false);
   }
 
-  if(loading)return <div className="app-shell"><header className="topbar"><Brand/></header><div className="empty-state"><Sparkles size={22}/><b>Connecting securely…</b><span>Loading your BOX EARN account.</span></div></div>;
+  if(loading)return <div className="app-shell loading-screen">
+    <div className="loading-orbit loading-orbit-one" aria-hidden="true"></div>
+    <div className="loading-orbit loading-orbit-two" aria-hidden="true"></div>
+    <div className="loading-logo-pulse"><Brand/><span className="loading-heartbeat" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span></div>
+    <div className="loading-copy"><b>BOX EARN</b><span>Connecting securely</span><div className="loading-progress"><i></i></div></div>
+  </div>;
   if(error&&!user)return <div className="app-shell"><header className="topbar"><Brand/></header><div className="page-content subpage"><div className="empty-state"><ShieldCheck size={24}/><b>Telegram sign-in required</b><span>{error}</span><p>Open the BOX EARN Mini App from @boxearnrobot in Telegram.</p></div></div></div>;
 
   return <div className="app-shell">
