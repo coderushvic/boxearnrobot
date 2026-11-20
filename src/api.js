@@ -27,6 +27,12 @@ export async function apiRequest(path, options = {}) {
     }
   });
   const payload = await response.json();
-  if (!response.ok || !payload.ok) throw new Error(payload.error?.message || "The request could not be completed.");
+  if (!response.ok || !payload.ok) {
+    const error = new Error(payload.error?.message || "The request could not be completed.");
+    error.status = response.status;
+    error.code = payload.error?.code;
+    error.retryAfterSeconds = payload.retryAfterSeconds;
+    throw error;
+  }
   return payload;
 }
