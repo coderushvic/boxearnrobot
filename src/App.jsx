@@ -79,7 +79,7 @@ function TasksPage({ tasks, hiddenTaskIds = [], onSubmit, submitting, onWatchAd,
   const communityItems = [
     { label: "Follow us on Facebook", detail: "Follow the BOX EARN Facebook community for updates.", Icon: Facebook, platform:"facebook" },
     { label: "Join our Telegram", detail: "Join the official BOX EARN Telegram community.", Icon: Send, platform:"telegram" },
-    { label: "Subscribe on YouTube", detail: "Subscribe to the BOX EARN YouTube channel.", Icon: Youtube, platform:"youtube" },
+    { label: "Follow us on YouTube", detail: "Follow the BOX EARN YouTube channel for updates.", Icon: Youtube, platform:"youtube" },
     { label: "Follow us on Instagram", detail: "Follow BOX EARN on Instagram for updates.", Icon: Instagram, platform:"instagram" }
   ].map(item => ({
     ...item,
@@ -87,7 +87,7 @@ function TasksPage({ tasks, hiddenTaskIds = [], onSubmit, submitting, onWatchAd,
   }));
   const communityTaskIds = communityItems.map(item => item.task?.id).filter(Boolean);
   const generalTasks = visibleTasks.filter(task => !communityTaskIds.includes(task.id));
-  const completionButton = task => <button type="button" className="action-task-button" disabled={submitting===task.id} onClick={()=>onSubmit(task.id)}>{submitting===task.id?"Sending…":"I've completed it"}</button>;
+  const completionButton = (task, actionLabel) => <button type="button" className="action-task-button withdraw-button task-cta" disabled={submitting===task.id} onClick={()=>onSubmit(task.id)}>{submitting===task.id?"Sending…":actionLabel}</button>;
   return <div className="page-content subpage tasks-page">
     <div className="page-intro"><span className="eyebrow">YOUR EARNING HUB</span><h1>Tasks<span className="green-dot">.</span></h1><p className="muted">Small actions. More chances to earn.</p></div>
     <SectionTitle eyebrow="QUICK WAYS TO EARN" title="More ways to earn"/>
@@ -95,12 +95,12 @@ function TasksPage({ tasks, hiddenTaskIds = [], onSubmit, submitting, onWatchAd,
       <article className="action-task ad-action-task">
         <span className="action-task-icon"><PlayCircle size={19}/></span>
         <div className="action-task-copy"><div className="action-task-title"><b>Watch ads</b></div><p>Watch a short ad and earn a mystery box.</p>{adCooldown>0 && <small className="ad-cooldown-label">Next ad available in {Math.floor(adCooldown/60)}:{String(adCooldown%60).padStart(2,"0")}</small>}<span className="task-box-reward"><Gift size={14}/> 1 box per ad</span></div>
-        <button className="action-task-button" disabled={!hasMonetagZone || watchingAd || adCooldown>0} onClick={onWatchAd}>{watchingAd?"…":adCooldown>0?"Wait":"Watch"}</button>
+        <button className="action-task-button withdraw-button task-cta" disabled={!hasMonetagZone || watchingAd || adCooldown>0} onClick={onWatchAd}>{watchingAd?"Loading…":adCooldown>0?"Wait":"Watch Ads"}</button>
       </article>
       {communityItems.map(({label,detail,Icon,platform,task})=>task&&<article className={"action-task community-action community-"+platform} key={task.id}>
         <span className={"action-task-icon community-icon "+platform+"-icon"}><Icon size={19}/></span>
         <div className="action-task-copy"><div className="action-task-title"><b>{label}</b></div><p>{detail}</p><span className="task-box-reward"><Gift size={14}/> {Number(task.reward_boxes)||1} {Number(task.reward_boxes)===1?"box":"boxes"}</span></div>
-        {completionButton(task)}
+        {completionButton(task, platform==="telegram"?"Join":"Follow")}
       </article>)}
       {generalTasks.map(task=><article className="action-task" key={task.id}>
         <span className="action-task-icon"><Target size={19}/></span><div className="action-task-copy"><div className="action-task-title"><b>{task.title}</b></div><p>{task.description}</p><span className="task-box-reward"><Gift size={14}/> {task.reward_boxes} {Number(task.reward_boxes)===1?"box":"boxes"}</span></div>{completionButton(task)}
