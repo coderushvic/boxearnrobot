@@ -400,3 +400,35 @@
     font-weight:900;
   }
 }
+
+
+/* Keep the header brand compact; reserve the larger treatment for the loading screen */
+.topbar .brand{
+  width:116px;
+  max-width:116px;
+  height:44px;
+  overflow:hidden;
+  flex:0 0 116px;
+}
+.topbar .brand img{
+  width:116px;
+  max-width:116px;
+  height:44px;
+  object-fit:contain;
+  object-position:left center;
+  mix-blend-mode:normal;
+}
+/* Task action labels: clearer and more confident on small screens */
+.action-task .action-task-button.withdraw-button.task-cta,
+.action-task .action-task-button.withdraw-button.task-cta:disabled{
+  font-size:13px;
+  font-weight:900;
+  letter-spacing:.25px;
+}
+@media(max-width:390px){
+  .action-task .action-task-button.withdraw-button.task-cta,
+  .action-task .action-task-button.withdraw-button.task-cta:disabled{
+    font-size:12px;
+    font-weight:900;
+  }
+}
