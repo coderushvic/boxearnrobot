@@ -124,13 +124,13 @@ body{background:radial-gradient(ellipse at 50% -12%,rgba(190,151,83,.10),transpa
 .reward-added{display:flex;align-items:center;justify-content:center;gap:6px;color:#82dfae;font-size:9px;margin:0 0 19px}
 .reward-popup .primary-button{border-radius:12px;background:linear-gradient(105deg,#d7bd80,#f1dfb0 48%,#9ee0bd);color:#102019}
 .reward-confetti{position:absolute;inset:0;overflow:hidden;pointer-events:none}
-.reward-confetti i{position:absolute;left:calc((var(--i)*37 + 3)%100 * 1%);top:-20px;width:6px;height:11px;border-radius:2px;background:var(--confetti-color,#e5cb8e);opacity:0;transform:rotate(calc(var(--i)*31deg));animation:confetti-fall 2.5s ease-out calc(var(--i)*.018s) forwards}
+.reward-confetti i{position:absolute;left:calc(var(--i)*3%);top:-20px;width:6px;height:11px;border-radius:2px;background:var(--confetti-color,#e5cb8e);opacity:0;transform:rotate(calc(var(--i)*31deg));animation:confetti-fall 2.5s ease-out calc(var(--i)*.018s) forwards}
 .reward-confetti i:nth-child(4n){--confetti-color:#54d7a0;width:5px;height:8px}
 .reward-confetti i:nth-child(4n+1){--confetti-color:#e8e5d8;width:4px;height:12px}
 .reward-confetti i:nth-child(4n+2){--confetti-color:#69dce7;width:7px;height:7px;border-radius:50%}
 .reward-confetti i:nth-child(4n+3){--confetti-color:#b69bdf;width:5px;height:10px}
 @keyframes reward-fade{from{opacity:0}to{opacity:1}}
 @keyframes reward-pop{0%{opacity:0;transform:translateY(45px) scale(.78)}65%{opacity:1;transform:translateY(-7px) scale(1.025)}100%{opacity:1;transform:translateY(0) scale(1)}}
-@keyframes confetti-fall{0%{opacity:0;transform:translate3d(0,0,0) rotate(0)}10%{opacity:1}100%{opacity:0;transform:translate3d(calc((var(--i)%7 - 3)*13px),105vh,0) rotate(calc(var(--i)*115deg))}}
+@keyframes confetti-fall{0%{opacity:0;transform:translate3d(0,0,0) rotate(0)}10%{opacity:1}100%{opacity:0;transform:translate3d(calc((var(--i) - 17)*2px),105vh,0) rotate(calc(var(--i)*115deg))}}
 @media(max-width:390px){.premium-box-hero{min-height:530px;padding-left:14px;padding-right:14px}.premium-box-stage{height:275px}.premium-box-stage .box-stage{height:270px;width:100%}.sound-toggle{right:14px;top:14px}.box-counter strong{font-size:38px}}
 @media(prefers-reduced-motion:reduce){.reward-backdrop,.reward-popup,.reward-confetti i{animation:none!important}.premium-box-stage,.gift-halo{transition:none!important}}
