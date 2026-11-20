@@ -19,12 +19,12 @@ const navItems = [
 function Brand() {
   return <div className="brand" aria-label="BOX EARN"><img src="/assets/boxearn/boxearn-logo.webp" alt="BOX EARN" /></div>;
 }
-function BoxArtwork({ revealing = false }) {
-  return <div className={"box-stage original-box-artwork" + (revealing ? " revealing" : "")} aria-label="Original BOX EARN emerald mystery gift box">
-    <span className="box-art-glow" />
-    <img className="box-image box-image-closed" src="/assets/boxearn/close.webp" alt="Closed BOX EARN mystery box" />
-    <img className="box-image box-image-slight" src="/assets/boxearn/slightly-open.webp" alt="BOX EARN mystery box slightly opening" />
-    <img className="box-image box-image-open" src="/assets/boxearn/open.webp" alt="Open BOX EARN mystery box reveal" />
+function BoxArtwork({ revealing = false, onRevealComplete }) {
+  return <div className={"box-stage original-box-artwork" + (revealing ? " revealing" : "")} role="img" aria-label={revealing ? "BOX EARN mystery box opening" : "Original BOX EARN emerald mystery gift box"}>
+    <span className="box-art-glow" aria-hidden="true" />
+    <img className="box-image box-image-closed" src="/assets/boxearn/close.webp" alt="" draggable="false" />
+    <img className="box-image box-image-slight" src="/assets/boxearn/slightly-open.webp" alt="" draggable="false" />
+    <img className="box-image box-image-open" src="/assets/boxearn/open.webp" alt="" draggable="false" onAnimationEnd={revealing ? onRevealComplete : undefined} />
   </div>;
 }
 function SectionTitle({ eyebrow, title, action, onAction }) {
@@ -67,9 +67,9 @@ function TasksPage({ tasks, onSubmit, submitting, onWatchAd, watchingAd, adStats
   </div>;
 }
 
-function BoxesPage({ user, activity = [], activityStats, onOpen, opening, revealing, reward }) {
+function BoxesPage({ user, activity = [], activityStats, onOpen, opening, revealing, reward, onRevealComplete }) {
   return <div className="page-content subpage"><div className="page-intro"><span className="eyebrow">THE REWARD REVEAL</span><h1>Mystery boxes<span className="green-dot">.</span></h1><p className="muted">Every box holds a little surprise.</p></div>
-    <div className="boxes-hero"><span className="limited-tag"><Sparkles size={12}/> YOUR BOX COLLECTION</span><BoxArtwork revealing={revealing}/><div className="boxes-count"><b>{user?.boxes ?? 0}</b><span>BOXES AVAILABLE</span></div><h2>{reward?"Congratulations!":"Ready for a surprise?"}</h2><p>{reward?"Your reward has been added to your account balance.":"Open a box to reveal a random USDT reward between $0.05 and $0.09."}</p>{reward&&<div className="reward-chip"><Sparkles size={13}/> You won {reward} USDT</div>}<button className="primary-button" onClick={onOpen} disabled={opening || !(user?.boxes>0)}>{opening?"Opening…":user?.boxes>0?"Open a mystery box":"No boxes available"}<ArrowRight size={16}/></button><small className="fine-print">Every opening is recorded in your account ledger.</small></div>
+    <div className="boxes-hero"><span className="limited-tag"><Sparkles size={12}/> YOUR BOX COLLECTION</span><BoxArtwork revealing={revealing} onRevealComplete={onRevealComplete}/><div className="boxes-count"><b>{user?.boxes ?? 0}</b><span>BOXES AVAILABLE</span></div><h2>{reward?"Congratulations!":"Ready for a surprise?"}</h2><p>{reward?"Your reward has been added to your account balance.":"Open a box to reveal a random USDT reward between $0.05 and $0.09."}</p>{reward&&<div className="reward-chip"><Sparkles size={13}/> You won {reward} USDT</div>}<button className="primary-button" onClick={onOpen} disabled={opening || revealing || !(user?.boxes>0)}>{opening?"Opening securely…":revealing?"Revealing your reward…":user?.boxes>0?"Open a mystery box":"No boxes available"}<ArrowRight size={16}/></button><small className="fine-print">Every opening is recorded in your account ledger.</small></div>
     <div className="reward-range"><span>REWARD RANGE</span><b>$0.05 – $0.09 <small>USDT</small></b></div>
     <div className="box-stats-grid">
       <div className="box-stat"><span>AVAILABLE</span><b>{user?.boxes ?? 0}</b><small>ready to open</small></div>
@@ -125,6 +125,7 @@ export default function App() {
   const [watchingAd,setWatchingAd]=useState(false);
   const [lastReward,setLastReward]=useState("");
   const [revealing,setRevealing]=useState(false);
+  const [pendingReward,setPendingReward]=useState("");
   const [withdrawOpen,setWithdrawOpen]=useState(false);
   const [amount,setAmount]=useState("0.10");
   const [wallet,setWallet]=useState("");
@@ -168,19 +169,28 @@ export default function App() {
     if(result)setNotice("You received "+result.boxesAwarded+" "+(result.boxesAwarded===1?"box":"boxes")+"!");
     setCheckingIn(false);
   }
+  function finishReveal() {
+    if (!pendingReward) return;
+    setLastReward(pendingReward);
+    setPendingReward("");
+    setRevealing(false);
+  }
+  useEffect(() => {
+    if (!revealing || !pendingReward) return undefined;
+    // Fallback for devices that fail to dispatch animationend (e.g. a tab resumes late).
+    const fallback = window.setTimeout(finishReveal, 4700);
+    return () => window.clearTimeout(fallback);
+  }, [revealing, pendingReward]);
   async function openBox() {
     if(opening||revealing||!(user?.boxes>0))return;
-    setOpening(true);setLastReward("");
+    setOpening(true);setLastReward("");setPendingReward("");
     try {
-      // The server opens the box, selects the reward and writes the ledger first.
-      // Only a successful server response is allowed to start the reveal animation.
+      // The API commits the box deduction, reward and ledger entry before any reveal begins.
       const result=await apiRequest("/api/boxes/open",{method:"POST",body:"{}"});
+      if (!result?.ok || !result?.rewardUsdt) throw new Error("The server did not confirm this box opening.");
       await refreshData().catch(()=>{});
+      setPendingReward(result.rewardUsdt);
       setRevealing(true);
-      window.setTimeout(()=>{
-        setLastReward(result.rewardUsdt);
-        setRevealing(false);
-      },4100);
     } catch(e) {
       setNotice(e.message||"The box could not be opened. Please try again.");
     } finally { setOpening(false); }
@@ -217,7 +227,7 @@ export default function App() {
     <main key={active} className="main-view">
       {active==="home"&&<HomePage user={user} stats={stats} onNavigate={setActive} checkedIn={checkedIn} checkinDay={checkinDay} onCheckIn={checkIn} checkingIn={checkingIn} onWithdraw={()=>setWithdrawOpen(true)}/>}
       {active==="tasks"&&<TasksPage tasks={tasks} onSubmit={submitTask} submitting={submitting} onWatchAd={watchAd} watchingAd={watchingAd} adStats={adStats}/>}
-      {active==="boxes"&&<BoxesPage user={user} activity={activity} activityStats={activityStats} onOpen={openBox} opening={opening} revealing={revealing} reward={lastReward}/>}
+      {active==="boxes"&&<BoxesPage user={user} activity={activity} activityStats={activityStats} onOpen={openBox} opening={opening} revealing={revealing} reward={lastReward} onRevealComplete={finishReveal}/>}
       {active==="invite"&&<InvitePage user={user} stats={stats} referrals={referrals}/>}
       {active==="profile"&&<ProfilePage user={user} onWithdraw={()=>setWithdrawOpen(true)}/>}
     </main>
