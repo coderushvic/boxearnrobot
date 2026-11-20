@@ -18,7 +18,7 @@ const navItems = [
 ];
 
 function Brand() {
-  return <div className="brand" aria-label="BOX EARN"><img src="/assets/boxearn/boxearn-logo.webp" alt="BOX EARN" /></div>;
+  return <div className="brand" aria-label="BOX EARN"><img src="/assets/boxearn/310112-removebg-preview.png" alt="BOX EARN" /></div>;
 }
 function BoxArtwork({ revealing = false, onRevealComplete, inactive = false, boxCount }) {
   return <div className={"box-stage original-box-artwork custom-gift-art" + (revealing ? " revealing" : "") + (inactive ? " inactive" : "")} role="img" aria-label={revealing ? "BOX EARN mystery gift opening" : "Original BOX EARN emerald and gold mystery gift"} onAnimationEnd={revealing ? onRevealComplete : undefined}>
