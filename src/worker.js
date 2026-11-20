@@ -195,15 +195,10 @@ async function api(request, env) {
     return json({ ok: true, user: presentUser(fresh) });
   }
   if (path === "/api/tasks" && request.method === "GET") {
-    const result = await env.DB.prepare(`SELECT t.id, t.title, t.description, t.reward_boxes, t.task_type
-      FROM tasks t
-      WHERE t.active = 1
-        AND NOT EXISTS (
-          SELECT 1 FROM task_submissions s
-          WHERE s.task_id = t.id AND s.telegram_id = ?
-            AND s.status IN ('pending','approved')
-        )
-      ORDER BY t.created_at`).bind(uid).all();
+    const result = await env.DB.prepare(`SELECT id, title, description, reward_boxes, task_type
+      FROM tasks
+      WHERE active = 1
+      ORDER BY created_at`).all();
     return json({ ok: true, tasks: result.results || [] });
   }
   if (path === "/api/tasks/submit" && request.method === "POST") {
