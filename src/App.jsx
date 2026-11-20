@@ -103,9 +103,10 @@ function BoxesPage({ user, onOpen, opening, revealing, reward, onRevealComplete,
 function InvitePage({ user, stats, referrals }) {
   const [copied,setCopied]=useState(false);
   const link=user?.referralLink || "";
-  return <div className="page-content subpage"><div className="page-intro"><span className="eyebrow">GROW TOGETHER</span><h1>Invite & earn<span className="green-dot">.</span></h1><p className="muted">Share BOX EARN with friends and earn more boxes.</p></div>
-    <div className="invite-hero"><div className="invite-orbit"><Users size={29}/></div><span className="eyebrow">YOUR REFERRAL REWARD</span><h2>1 mystery box</h2><p>For every friend who joins with your link and completes 2 approved tasks.</p><div className="invite-steps"><span><i>1</i> Invite a friend</span><span><i>2</i> They complete 2 tasks</span><span><i>3</i> You get 1 box</span></div></div>
-    <div className="referral-link-card"><span className="eyebrow">YOUR INVITE LINK</span><div className="link-value"><Link2 size={16}/><span>{link || "Open inside Telegram to generate your link."}</span></div><button className="primary-button" disabled={!link} onClick={async()=>{try{await navigator.clipboard.writeText(link);setCopied(true);}catch{setCopied(false);}}}>{copied?<><Check size={16}/> Copied</>:<><Copy size={16}/> Copy invite link</>}</button></div>
+  return <div className="page-content subpage invite-page">
+    <div className="page-intro"><span className="eyebrow">GROW TOGETHER</span><h1>Invite & earn<span className="green-dot">.</span></h1><p className="muted">Share BOX EARN. Earn a box when a friend qualifies.</p></div>
+    <div className="referral-link-card invite-link-first"><div className="invite-link-heading"><span className="eyebrow">YOUR PERSONAL INVITE LINK</span><span className="invite-link-badge"><Link2 size={12}/> READY TO SHARE</span></div><div className="link-value"><Link2 size={16}/><span>{link || "Open inside Telegram to generate your link."}</span></div><button className="primary-button" disabled={!link} onClick={async()=>{try{await navigator.clipboard.writeText(link);setCopied(true);}catch{setCopied(false);}}}>{copied?<><Check size={16}/> Copied</>:<><Copy size={16}/> Copy invite link</>}</button></div>
+    <div className="invite-hero invite-compact"><div className="invite-orbit"><Users size={23}/></div><div className="invite-reward-copy"><span className="eyebrow">YOUR REFERRAL REWARD</span><h2>1 mystery box</h2><p>Earn one box when a friend joins with your link and completes 2 approved tasks.</p></div><div className="invite-steps"><span><i>1</i> Invite</span><span><i>2</i> 2 approved tasks</span><span><i>3</i> Get 1 box</span></div></div>
     <div className="task-summary"><div><small>TOTAL INVITES</small><b>{stats?.total ?? 0}</b></div><div><small>QUALIFIED</small><b>{stats?.qualified ?? 0}</b></div><div><small>BOXES EARNED</small><b>{stats?.boxesEarned ?? 0}</b></div></div>
     <SectionTitle eyebrow="YOUR NETWORK" title="Referral activity"/>{referrals.length?<div className="task-list">{referrals.map(r=><article className="task-card" key={r.telegram_id}><h3>{r.username?"@"+r.username:r.first_name}</h3><p>Joined {new Date(r.created_at).toLocaleDateString()} · {r.status}</p><span className="reward-chip">{r.status==="qualified"?"1 box rewarded":"2 approved tasks to qualify"}</span></article>)}</div>:<div className="empty-state"><Users size={22}/><b>Your network starts here</b><span>Friends who join with your link will appear here.</span></div>}
   </div>;
@@ -211,21 +212,23 @@ export default function App() {
   }
   useEffect(() => {
     if (!rewardModalOpen) return undefined;
-    const colors = ["#12b875", "#e6bd68", "#f4e7c5", "#68dce4", "#a88be8"];
-    const end = Date.now() + 1900;
-    const frame = () => {
-      confetti({ particleCount: 5, angle: 60, spread: 62, startVelocity: 48, gravity: 0.92, ticks: 190, origin: { x: 0, y: 0.62 }, colors, scalar: 0.95 });
-      confetti({ particleCount: 5, angle: 120, spread: 62, startVelocity: 48, gravity: 0.92, ticks: 190, origin: { x: 1, y: 0.62 }, colors, scalar: 0.95 });
-      if (Date.now() < end) requestAnimationFrame(frame);
-    };
-    frame();
-    confetti({ particleCount: 90, spread: 105, startVelocity: 42, gravity: 0.9, ticks: 220, origin: { y: 0.55 }, colors, scalar: 1.05 });
-    return () => confetti.reset();
+    const colors = ["#12b875", "#e6bd68", "#f4e7c5", "#68dce4", "#a88be8", "#ffffff"];
+    const timers = [];
+    const burst = (origin,count,spread,velocity) => confetti({particleCount:count,spread,startVelocity:velocity,gravity:.82,ticks:260,decay:.91,scalar:1.08,origin,colors,shapes:["square","circle"],zIndex:10000});
+    burst({x:.5,y:.56},170,115,58);
+    timers.push(window.setTimeout(()=>burst({x:.18,y:.62},75,85,52),180));
+    timers.push(window.setTimeout(()=>burst({x:.82,y:.62},75,85,52),280));
+    timers.push(window.setTimeout(()=>confetti({particleCount:45,spread:360,startVelocity:34,gravity:1.05,ticks:220,scalar:1.25,origin:{x:.5,y:.42},colors,shapes:["star","circle"],zIndex:10000}),620));
+    let frameId;
+    const end=Date.now()+2100;
+    const sideCannons=()=>{burst({x:0,y:.68},4,48,34);burst({x:1,y:.68},4,48,34);if(Date.now()<end)frameId=requestAnimationFrame(sideCannons);};
+    frameId=requestAnimationFrame(sideCannons);
+    return ()=>{timers.forEach(window.clearTimeout);cancelAnimationFrame(frameId);confetti.reset();};
   }, [rewardModalOpen]);
   useEffect(() => {
     if (!revealing || !pendingReward) return undefined;
     // Fallback for devices that fail to dispatch animationend (e.g. a tab resumes late).
-    const fallback = window.setTimeout(finishReveal, 4700);
+    const fallback = window.setTimeout(finishReveal, 5000);
     return () => window.clearTimeout(fallback);
   }, [revealing, pendingReward]);
   async function openBox() {
@@ -271,7 +274,7 @@ export default function App() {
   if(error&&!user)return <div className="app-shell"><header className="topbar"><Brand/></header><div className="page-content subpage"><div className="empty-state"><ShieldCheck size={24}/><b>Telegram sign-in required</b><span>{error}</span><p>Open the BOX EARN Mini App from @boxearnrobot in Telegram.</p></div></div></div>;
 
   return <div className="app-shell">
-    <header className="topbar"><Brand/><button className="top-avatar" onClick={()=>setActive("profile")} aria-label="Open profile"><UserRound size={17}/></button></header>
+    <header className="topbar"><Brand/></header>
     <main key={active} className="main-view">
       {active==="home"&&<HomePage user={user} stats={stats} onNavigate={setActive} checkedIn={checkedIn} checkinDay={checkinDay} onCheckIn={checkIn} checkingIn={checkingIn} onWithdraw={()=>setWithdrawOpen(true)}/>}
       {active==="tasks"&&<TasksPage tasks={tasks} onSubmit={submitTask} submitting={submitting} onWatchAd={watchAd} watchingAd={watchingAd} adStats={adStats}/>}
